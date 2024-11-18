@@ -22,6 +22,9 @@ public class GameCanvas extends JPanel {
     private enum GameState { PLAYING, PAUSED, GAME_OVER, MENU }
     private GameState currentState = GameState.MENU;
     private DebugOverlay debugOverlay = new DebugOverlay();
+    private AudioPlayer bgMusic;
+    private AudioPlayer boatCrashSound;
+
 
 
     public GameCanvas() {
@@ -32,7 +35,9 @@ public class GameCanvas extends JPanel {
         setUpMouseListener();
         loadSeaBackground();
         enemyBoat = new EnemyBoat(400, 600, 300, 500, 700, 700); // Customize patrol area as needed
-
+        bgMusic = new AudioPlayer("src/assets/bgMusic.wav");
+        boatCrashSound = new AudioPlayer("src/assets/boatcrash.wav");
+        bgMusic.playLoop(); // Start music when the game initializes
 
         // Set up key listener for handling key events
         setFocusable(true);
@@ -87,19 +92,26 @@ public class GameCanvas extends JPanel {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-
+    
         if (onTitleScreen) {
             drawTitleScreen(g);
         } else if (gameOver) {
             drawGameOverScreen(g);
         } else if (currentState == GameState.PAUSED) {
+            if (bgMusic != null) {
+                bgMusic.pause(); // Pause audio
+            }
             drawGameElements(g);
             drawPauseMenu(g);
         } else {
+            if (bgMusic != null) {
+                bgMusic.resume(); // Resume audio
+            }
             drawGameElements(g);
             debugOverlay.draw(g, boat, enemyBoat, rocks);
         }
     }
+    
 
     private void drawTitleScreen(Graphics g) {
         // Background color
@@ -178,15 +190,12 @@ public class GameCanvas extends JPanel {
             // Check for collisions
             for (Rock rock : rocks) {
                 if (boat.getBounds().intersects(rock.getBounds())) {
-                    gameOver = true;
-                    currentState = GameState.GAME_OVER;
-                    break;
+                    endGame();
                 }
             }
 
             if (boat.getBounds().intersects(enemyBoat.getBounds())) {
-                gameOver = true;
-                currentState = GameState.GAME_OVER;
+                endGame();
             }
 
             debugOverlay.update();
@@ -194,12 +203,26 @@ public class GameCanvas extends JPanel {
         }
     }
 
-    public void resetGame() {
-        boat.resetPosition();
-        gameOver = false;
-        currentState = GameState.PLAYING;
-        repaint();
+    private void endGame() {
+        gameOver = true;
+        currentState = GameState.GAME_OVER;
+        bgMusic.stop(); // Stop background music
+        boatCrashSound.playOnce();
     }
+
+    public void resetGame() {
+    boat.resetPosition();
+    gameOver = false;
+    currentState = GameState.PLAYING;
+
+    // Restart the background music
+    if (bgMusic != null) {
+        bgMusic.stop();  // Ensure the current music stops
+        bgMusic.playLoop();  // Restart the music in a loop
+    }
+
+    repaint(); // Redraw the game state
+}
 
     private void drawPauseMenu(Graphics g) {
         g.setColor(new Color(0, 0, 0, 150));

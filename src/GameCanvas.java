@@ -1,5 +1,6 @@
 
 import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+
 
 public class GameCanvas extends JPanel {
     private int screenWidth = 1000;
@@ -24,6 +26,9 @@ public class GameCanvas extends JPanel {
     private DebugOverlay debugOverlay = new DebugOverlay();
     private AudioPlayer bgMusic;
     private AudioPlayer boatCrashSound;
+    private Rectangle winningPoint;
+    private boolean playerWon = false; // Track if the player won
+
 
 
 
@@ -38,6 +43,8 @@ public class GameCanvas extends JPanel {
         bgMusic = new AudioPlayer("src/assets/bgMusic.wav");
         boatCrashSound = new AudioPlayer("src/assets/boatcrash.wav");
         bgMusic.playLoop(); // Start music when the game initializes
+        winningPoint = new Rectangle(930, 500, 50, 50); 
+
 
         // Set up key listener for handling key events
         setFocusable(true);
@@ -95,22 +102,33 @@ public class GameCanvas extends JPanel {
     
         if (onTitleScreen) {
             drawTitleScreen(g);
+            if (bgMusic != null && !bgMusic.isPlaying()) {
+                bgMusic.playLoop(); // Play music on title screen
+            }
         } else if (gameOver) {
-            drawGameOverScreen(g);
+            if (bgMusic != null) {
+                bgMusic.stop(); // Stop music on game over
+            }
+            if (playerWon) {
+                drawWinScreen(g); // Show "You Win" screen
+            } else {
+                drawGameOverScreen(g); // Show "Game Over" screen
+            }
         } else if (currentState == GameState.PAUSED) {
             if (bgMusic != null) {
                 bgMusic.pause(); // Pause audio
             }
             drawGameElements(g);
             drawPauseMenu(g);
-        } else {
-            if (bgMusic != null) {
+        } else { // Game is running
+            if (bgMusic != null && !bgMusic.isPlaying()) {
                 bgMusic.resume(); // Resume audio
             }
             drawGameElements(g);
             debugOverlay.draw(g, boat, enemyBoat, rocks);
         }
     }
+    
     
 
     private void drawTitleScreen(Graphics g) {
@@ -167,7 +185,7 @@ public class GameCanvas extends JPanel {
             e.printStackTrace();
         }
     }
-
+    
     private void drawGameElements(Graphics g) {
         if (seaBackground != null) {
             g.drawImage(seaBackground, 0, 0, screenWidth, screenHeight, null);
@@ -178,14 +196,20 @@ public class GameCanvas extends JPanel {
         }
         boat.draw(g);
         enemyBoat.draw(g);  // Draw the enemy boat
+
+        g.setColor(Color.GREEN);
+g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.height);
+
     }
 
 
     public void updateGame() {
         if (currentState == GameState.PLAYING) {
             boat.updatePosition();
+            boat.stayWithinBounds(getWidth(), getHeight());
             enemyBoat.updatePosition();  // Update enemy position
             debugOverlay.incrementUpdateCount();
+            checkWinCondition(); // Check if the player has reached the destination
 
             // Check for collisions
             for (Rock rock : rocks) {
@@ -203,6 +227,9 @@ public class GameCanvas extends JPanel {
         }
     }
 
+   
+    
+
     private void endGame() {
         gameOver = true;
         currentState = GameState.GAME_OVER;
@@ -211,19 +238,68 @@ public class GameCanvas extends JPanel {
     }
 
     public void resetGame() {
-    boat.resetPosition();
-    gameOver = false;
-    currentState = GameState.PLAYING;
-
-    // Restart the background music
-    if (bgMusic != null) {
-        bgMusic.stop();  // Ensure the current music stops
-        bgMusic.playLoop();  // Restart the music in a loop
+        // Reset the player's boat position
+        boat.resetPosition();
+    
+        // Reset enemy boat and rocks (if applicable)
+        if (enemyBoat != null) {
+            enemyBoat.updatePosition(); // Reset enemy boat position
+        }
+       
+    
+        // Reset game state
+        gameOver = false;
+        playerWon = false; // Reset win condition
+        currentState = GameState.PLAYING;
+    
+        // Restart the background music
+        if (bgMusic != null) {
+            bgMusic.stop();  // Stop current music
+            bgMusic.playLoop();  // Start music again in a loop
+        }
+    
+        // Redraw the game state
+        repaint();
     }
+    
 
-    repaint(); // Redraw the game state
+
+
+public void checkWinCondition() {
+    if (boat.getBounds().intersects(winningPoint)) {
+        winGame();
+    }
+}
+private void drawWinScreen(Graphics g) {
+    // Set background color
+    g.setColor(Color.CYAN);
+    g.fillRect(0, 0, screenWidth, screenHeight);
+
+    // Draw other game elements like rocks and boat
+    for (Rock rock : rocks) {
+        rock.draw(g);
+    }
+    boat.draw(g);
+
+    // Display "You Win" message
+    g.setColor(Color.BLACK);
+    g.setFont(new Font("Arial", Font.BOLD, 36));
+    g.drawString("YOU WIN!", screenWidth / 2 - 100, screenHeight / 2 - 40);
+
+    // Display options
+    g.setFont(new Font("Arial", Font.PLAIN, 20));
+    g.drawString("Press 'R' to Restart", screenWidth / 2 - 100, screenHeight / 2 + 20);
+    g.drawString("Press 'N' for Next Level", screenWidth / 2 - 120, screenHeight / 2 + 50);
 }
 
+public void winGame() {
+    if (!gameOver) {
+        gameOver = true;
+        playerWon = true; // Mark as a win
+        bgMusic.stop();
+        repaint();
+    }
+}
     private void drawPauseMenu(Graphics g) {
         g.setColor(new Color(0, 0, 0, 150));
         g.fillRect(0, 0, screenWidth, screenHeight);
@@ -237,25 +313,32 @@ public class GameCanvas extends JPanel {
     }
 
     public void handleKeyPress(int keyCode) {
-        if (keyCode == KeyEvent.VK_R) {
-            resetGame();
-        } else if (keyCode == KeyEvent.VK_Q) {
-            System.exit(0);
-        } else if (keyCode == KeyEvent.VK_D) { // Toggle debug mode
-            debugOverlay.toggleDebugMode();
+        if (gameOver) {
+            if (keyCode == KeyEvent.VK_R) { 
+                resetGame(); // Restart the game
+            } else if (playerWon && keyCode == KeyEvent.VK_N) { 
+                // Placeholder for "Next Level" feature
+                System.out.println("Next Level feature coming soon!");
+            } else if (keyCode == KeyEvent.VK_Q) {
+                System.exit(0); // Quit game
+            }
         } else if (currentState == GameState.PLAYING) {
-            if (keyCode == KeyEvent.VK_P) {
-                currentState = GameState.PAUSED;
-            } else {
-                boat.setDirection(keyCode);
+            if (keyCode == KeyEvent.VK_P) { 
+                currentState = GameState.PAUSED; // Pause the game
+            } else if (keyCode == KeyEvent.VK_D) { 
+                debugOverlay.toggleDebugMode(); // Toggle debug mode
+            } else { 
+                boat.setDirection(keyCode); // Set boat movement direction
             }
         } else if (currentState == GameState.PAUSED) {
-            if (keyCode == KeyEvent.VK_P) {
-                currentState = GameState.PLAYING;
+            if (keyCode == KeyEvent.VK_P) { 
+                currentState = GameState.PLAYING; // Resume the game
             }
         }
-        repaint();
+    
+        repaint(); // Refresh the game state visually
     }
+    
 
     public void handleKeyRelease(int keyCode) {
         if (!gameOver && !onTitleScreen) {

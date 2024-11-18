@@ -39,6 +39,13 @@ public class Boat {
     
     }
 
+    public void stayWithinBounds(int screenWidth, int screenHeight) {
+        if (x < 0) x = 0; // Left boundary
+        if (x + WIDTH > screenWidth) x = screenWidth - WIDTH; // Right boundary
+        if (y < 0) y = 0; // Top boundary
+        if (y + HEIGHT > screenHeight) y = screenHeight - HEIGHT; // Bottom boundary
+    }
+
     private void loadBoatImage() {
         try {
             // Load the boat image from assets folder

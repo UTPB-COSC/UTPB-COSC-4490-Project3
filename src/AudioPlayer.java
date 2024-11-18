@@ -5,6 +5,8 @@ import java.io.IOException;
 public class AudioPlayer {
     private Clip clip;
     private long clipPosition = 0; // Position of the clip in microseconds
+    private boolean isPaused = false; // Track pause state
+
 
     public AudioPlayer(String filePath) {
         try {
@@ -48,5 +50,9 @@ public class AudioPlayer {
             clip.setMicrosecondPosition(clipPosition); // Resume from saved position
             clip.start();
         }
+    }
+
+    public boolean isPlaying() {
+        return clip != null && clip.isRunning();
     }
 }

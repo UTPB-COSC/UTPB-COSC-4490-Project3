@@ -2,6 +2,8 @@
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import java.util.Iterator;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -195,33 +197,49 @@ public class GameCanvas extends JPanel {
             rock.draw(g);
         }
         boat.draw(g);
-        enemyBoat.draw(g);  // Draw the enemy boat
+        enemyBoat.draw(g);  
+        
 
         g.setColor(Color.GREEN);
 g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.height);
 
     }
 
+  
+    
+        public void fireProjectile(boolean isEnemy) {
+            int startX = isEnemy ? enemyBoat.getX() : boat.getX();
+            int startY = isEnemy ? enemyBoat.getY() : boat.getY();
+            int velocityY = isEnemy ? 2 : -2; // Enemy cannonballs go downward, player cannonballs upward
+    
+            Projectile projectile = new Projectile(startX, startY, 0, velocityY);
+            if (isEnemy) {
+                enemyBoat.getProjectiles().add(projectile);
+            } else {
+                boat.getProjectiles().add(projectile);
+            }
+        }
+    }
+    
 
     public void updateGame() {
         if (currentState == GameState.PLAYING) {
             boat.updatePosition();
             boat.stayWithinBounds(getWidth(), getHeight());
-            enemyBoat.updatePosition();  // Update enemy position
             debugOverlay.incrementUpdateCount();
             checkWinCondition(); // Check if the player has reached the destination
+            enemyBoat.updatePosition();
+            enemyBoat.shootAtPlayer(boat);
+            enemyBoat.updateProjectiles();
 
-            // Check for collisions
-            for (Rock rock : rocks) {
-                if (boat.getBounds().intersects(rock.getBounds())) {
-                    endGame();
-                }
-            }
+            checkRockCollisions();
+            checkProjectileCollisions();
+            checkBoatCollisions();
 
-            if (boat.getBounds().intersects(enemyBoat.getBounds())) {
-                endGame();
-            }
 
+           
+
+            
             debugOverlay.update();
             repaint();
         }
@@ -236,6 +254,38 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
         bgMusic.stop(); // Stop background music
         boatCrashSound.playOnce();
     }
+
+    private void checkProjectileCollisions() {
+        Iterator<Projectile> iterator = enemyBoat.getProjectiles().iterator();
+        while (iterator.hasNext()) {
+            Projectile projectile = iterator.next();
+            projectile.move(); // Update the projectile's position
+    
+            if (projectile.getBounds().intersects(boat.getBounds())) {
+                iterator.remove(); // Remove the projectile
+                endGame(); // End the game on collision
+            } else if (projectile.isOutOfBounds(canvasWidth, canvasHeight)) {
+                iterator.remove(); // Remove projectiles that go off-screen
+            }
+        }
+    }
+    
+    private void checkRockCollisions() {
+        for (Rock rock : rocks) {
+            if (boat.getBounds().intersects(rock.getBounds())) {
+                endGame(); // End game if the boat hits a rock
+            }
+        }
+    }
+    
+    private void checkBoatCollisions() {
+        if (boat.getBounds().intersects(enemyBoat.getBounds())) {
+            endGame(); // End game if boats collide
+        }
+    }
+    
+
+    
 
     public void resetGame() {
         // Reset the player's boat position
@@ -281,6 +331,7 @@ private void drawWinScreen(Graphics g) {
     }
     boat.draw(g);
 
+
     // Display "You Win" message
     g.setColor(Color.BLACK);
     g.setFont(new Font("Arial", Font.BOLD, 36));
@@ -314,6 +365,7 @@ public void winGame() {
 
     public void handleKeyPress(int keyCode) {
         if (gameOver) {
+            
             if (keyCode == KeyEvent.VK_R) { 
                 resetGame(); // Restart the game
             } else if (playerWon && keyCode == KeyEvent.VK_N) { 
@@ -321,6 +373,9 @@ public void winGame() {
                 System.out.println("Next Level feature coming soon!");
             } else if (keyCode == KeyEvent.VK_Q) {
                 System.exit(0); // Quit game
+            }
+            else if (keyCode == KeyEvent.VK_SPACE) {
+                fireProjectile(false); // Player fires
             }
         } else if (currentState == GameState.PLAYING) {
             if (keyCode == KeyEvent.VK_P) { 
@@ -336,13 +391,12 @@ public void winGame() {
             }
         }
     
-        repaint(); // Refresh the game state visually
+          repaint(); // Refresh the game state visually
     }
     
 
     public void handleKeyRelease(int keyCode) {
         if (!gameOver && !onTitleScreen) {
             boat.stopMoving();
-        }
-    }
-}
+        }}
+   

@@ -79,15 +79,7 @@ public class Boat {
             }
         }
     }
-    public int getX() {
-        return x;
-    }
-    
-    public int getY() {
-        return y;
-    }
-    
-    
+
     public void draw(Graphics g) {
         if (boatImage != null) {
             g.drawImage(boatImage, x, y, WIDTH, HEIGHT, null);
@@ -117,6 +109,23 @@ public class Boat {
         if (moveSound != null) {
             moveSound.stop();
         }
+    }
+
+     // Getters
+     public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public int getWidth() {
+        return WIDTH;
+    }
+
+    public int getHeight() {
+        return HEIGHT;
     }
 
     public Rectangle getBounds() {

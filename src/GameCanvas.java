@@ -288,11 +288,13 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
     public void resetGame() {
         // Reset the player's boat position
         boat.resetPosition();
-    
+        enemyBoat = new EnemyBoat(400, 600, 300, 500, 700, 700);
+
         // Reset enemy boat and rocks (if applicable)
         if (enemyBoat != null) {
             enemyBoat.updatePosition(); // Reset enemy boat position
         }
+        
         projectiles.clear(); // Remove any existing projectiles
 
     

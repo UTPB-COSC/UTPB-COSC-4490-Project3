@@ -16,6 +16,7 @@ public class EnemyBoat {
 
     private final int patrolX1, patrolY1, patrolX2, patrolY2; // Patrol boundaries
     private final int speed = 2;  // Speed of the enemy boat
+    private boolean destroyed = false; // Flag to track if the boat is destroyed
 
     public EnemyBoat(int startX, int startY, int patrolX1, int patrolY1, int patrolX2, int patrolY2) {
         this.x = startX;
@@ -39,29 +40,42 @@ public class EnemyBoat {
     }
 
     public void updatePosition() {
-        x += dx;
-        y += dy;
+        if (!destroyed) { // Only update position if not destroyed
+            x += dx;
+            y += dy;
 
-        // Reverse direction when reaching patrol area boundaries
-        if (x <= patrolX1 || x >= patrolX2 - WIDTH) {
-            dx = -dx;
-        }
-        if (y <= patrolY1 || y >= patrolY2 - HEIGHT) {
-            dy = -dy;
+            // Reverse direction when reaching patrol area boundaries
+            if (x <= patrolX1 || x >= patrolX2 - WIDTH) {
+                dx = -dx;
+            }
+            if (y <= patrolY1 || y >= patrolY2 - HEIGHT) {
+                dy = -dy;
+            }
         }
     }
 
     public void draw(Graphics g) {
-        if (enemyBoatImage != null) {
+        if (!destroyed && enemyBoatImage != null) { // Only draw if not destroyed
             g.drawImage(enemyBoatImage, x, y, WIDTH, HEIGHT, null);
         }
     }
 
     public Rectangle getBounds() {
+        if (destroyed) {
+            return new Rectangle(0, 0, 0, 0); // No collision if destroyed
+        }
         return new Rectangle(x, y, WIDTH, HEIGHT);
     }
 
-    // Method to check if player boat is in range (optional)
+    public void destroy() {
+        destroyed = true; // Mark the boat as destroyed
+    }
+
+    public boolean isDestroyed() {
+        return destroyed;
+    }
+
+    // Optional: Check if player boat is in range
     public boolean isPlayerInRange(Boat playerBoat) {
         int detectionRange = 150; // Set range as needed
         return getBounds().intersects(playerBoat.getBounds());

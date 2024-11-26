@@ -209,7 +209,9 @@ public class GameCanvas extends JPanel {
             rock.draw(g);
         }
         boat.draw(g);
-        enemyBoat.draw(g);  // Draw the enemy boat
+        if (!enemyBoat.isDestroyed()) {
+            enemyBoat.draw(g); // Only draw if the enemy boat isn't destroyed
+        }
 
         g.setColor(Color.GREEN);
 g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.height);
@@ -233,15 +235,18 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
             }
 
                 // Update projectiles and check for collisions
-            for (Projectile projectile : projectiles) {
-                projectile.update();
-
-                // Check collision with enemy boat
-                if (projectile.getBounds().intersects(enemyBoat.getBounds())) {
-                    projectile.setActive(false); // Deactivate the projectile
-                    System.out.println("Hit!"); // Placeholder for damage logic
+                for (Projectile projectile : projectiles) {
+                    if (projectile.isActive()) {
+                        projectile.update();
+            
+                        // Check collision with enemy boat
+                        if (!enemyBoat.isDestroyed() && projectile.getBounds().intersects(enemyBoat.getBounds())) {
+                            projectile.setActive(false); // Deactivate the projectile
+                            enemyBoat.destroy();        // Destroy the enemy boat
+                            System.out.println("Enemy boat destroyed!");
+                        }
+                    }
                 }
-            }
 
             // Remove inactive projectiles
             projectiles.removeIf(projectile -> !projectile.isActive());
@@ -288,7 +293,8 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
         if (enemyBoat != null) {
             enemyBoat.updatePosition(); // Reset enemy boat position
         }
-       
+        projectiles.clear(); // Remove any existing projectiles
+
     
         // Reset game state
         gameOver = false;
@@ -356,35 +362,40 @@ public void winGame() {
     }
 
     public void handleKeyPress(int keyCode) {
-        if (gameOver) {
-            if (keyCode == KeyEvent.VK_R) { 
-                resetGame(); // Restart the game
-            } else if (playerWon && keyCode == KeyEvent.VK_N) { 
-                // Placeholder for "Next Level" feature
-                System.out.println("Next Level feature coming soon!");
-                
-            } else if (keyCode == KeyEvent.VK_Q) {
-                System.exit(0); // Quit game
-            }
-        } else if (currentState == GameState.PLAYING) {
-            if (keyCode == KeyEvent.VK_P) { 
+        // Global actions (work in all states)
+        if (keyCode == KeyEvent.VK_Q) {
+            System.exit(0); // Quit the game
+        } else if (keyCode == KeyEvent.VK_R) {
+            resetGame(); // Reset the game
+            return; // Prevent further state-specific processing
+        }
+    
+        // Handle state-specific actions
+        if (currentState == GameState.PLAYING) {
+            if (keyCode == KeyEvent.VK_P) {
                 currentState = GameState.PAUSED; // Pause the game
-            } else if (keyCode == KeyEvent.VK_D) { 
+            } else if (keyCode == KeyEvent.VK_D) {
                 debugOverlay.toggleDebugMode(); // Toggle debug mode
-            } 
-            else if (keyCode == KeyEvent.VK_SPACE) { 
-                fireProjectile();            }
-            else { 
-                boat.setDirection(keyCode); // Set boat movement direction
+            } else if (keyCode == KeyEvent.VK_SPACE) {
+                fireProjectile(); // Fire a projectile
+            } else {
+                boat.setDirection(keyCode); // Move the boat
             }
         } else if (currentState == GameState.PAUSED) {
-            if (keyCode == KeyEvent.VK_P) { 
+            if (keyCode == KeyEvent.VK_P) {
                 currentState = GameState.PLAYING; // Resume the game
+            }
+        } else if (gameOver) {
+            if (playerWon && keyCode == KeyEvent.VK_N) {
+                // Placeholder for "Next Level" feature
+                System.out.println("Next Level feature coming soon!");
             }
         }
     
-        repaint(); // Refresh the game state visually
+        // Refresh the game state visually
+        repaint();
     }
+    
     
 
     public void handleKeyRelease(int keyCode) {

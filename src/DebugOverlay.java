@@ -66,6 +66,7 @@ public class DebugOverlay {
             drawHitbox(g, rock.getBounds());
         }
     }
+    
 
     private void drawHitbox(Graphics g, Rectangle bounds) {
         g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);

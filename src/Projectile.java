@@ -5,34 +5,51 @@ import java.io.File;
 import java.io.IOException;
 
 public class Projectile {
-    private int x, y, width, height;
-    private int speed = 5; // Speed of the projectile
+    private double x, y; // Precise position for smooth movement
+    private final int width, height;
+    private final double speed = 5; // Projectile speed
+    private double directionX, directionY; // Unit direction vector
     private BufferedImage image;
-    private boolean active = true; // Track if the projectile is still active
+    private boolean active = true; // Whether the projectile is active
 
-    public Projectile(int x, int y) {
-        this.x = x;
-        this.y = y;
-        this.width = 30; // Adjust to desired projectile size
+    public Projectile(int startX, int startY, double directionX, double directionY, String imagePath) {
+        this.x = startX;
+        this.y = startY;
+        this.width = 30; // Size of the projectile
         this.height = 30;
 
+        // Normalize the direction vector
+        double magnitude = Math.sqrt(directionX * directionX + directionY * directionY);
+        if (magnitude != 0) {
+            this.directionX = directionX / magnitude;
+            this.directionY = directionY / magnitude;
+        } else {
+            this.directionX = 0;
+            this.directionY = 0;
+        }
+
+        // Load the projectile image
         try {
-            image = ImageIO.read(new File("src/assets/fireball.png"));
+            image = ImageIO.read(new File(imagePath));
         } catch (IOException e) {
             e.printStackTrace();
+            System.err.println("Error loading projectile image: " + imagePath);
         }
     }
 
     public void update() {
-        x += speed; // Move the projectile to the right
-        if (x > 1000) { // Remove the projectile if it goes off-screen
+        x += directionX * speed;
+        y += directionY * speed;
+
+        // Deactivate projectile if it moves off-screen
+        if (x < 0 || x > 1000 || y < 0 || y > 800) {
             active = false;
         }
     }
 
     public void draw(Graphics g) {
-        if (active) {
-            g.drawImage(image, x, y, width, height, null);
+        if (active && image != null) {
+            g.drawImage(image, (int) x, (int) y, width, height, null);
         }
     }
 
@@ -45,6 +62,6 @@ public class Projectile {
     }
 
     public Rectangle getBounds() {
-        return new Rectangle(x, y, width, height);
+        return new Rectangle((int) x, (int) y, width, height);
     }
 }

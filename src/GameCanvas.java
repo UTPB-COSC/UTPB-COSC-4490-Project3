@@ -32,8 +32,11 @@ public class GameCanvas extends JPanel {
     private Rectangle winningPoint;
     private boolean playerWon = false; // Track if the player won
     private List<Projectile> projectiles;
+    private List<Projectile> enemyProjectiles; // For enemy boat projectiles
     private long lastShotTime = 0; // Track the last shot time
+    private long enemyLastShotTime = 0; // Last shot timestamp for enemy boat
     private ParticleSystem particleSystem = new ParticleSystem();
+    
     
 
 
@@ -54,6 +57,8 @@ public class GameCanvas extends JPanel {
         bgMusic.playLoop(); // Start music when the game initializes
         winningPoint = new Rectangle(930, 500, 50, 50); 
         projectiles = new CopyOnWriteArrayList<>(); // Thread-safe for iteration during update
+        enemyProjectiles = new CopyOnWriteArrayList<>();
+
 
 
 
@@ -214,6 +219,10 @@ public class GameCanvas extends JPanel {
         for (Projectile p : projectiles) {
             p.draw(g);
         }
+
+        for (Projectile p : enemyProjectiles) {
+            p.draw(g);
+        }
         
         for (Rock rock : rocks) {
             rock.draw(g);
@@ -242,6 +251,8 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
             particleSystem.update(); // Update particle effects
 
             updateProjectiles();
+            enemyFireProjectile(boat);
+
 
             // Check for collisions
             for (Rock rock : rocks) {
@@ -263,9 +274,22 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
                         }
                     }
                 }
+                    // Update enemy projectiles
+    for (Projectile projectile : enemyProjectiles) {
+        if (projectile.isActive()) {
+            projectile.update();
+
+            // Check collision with player boat
+            if (projectile.getBounds().intersects(boat.getBounds())) {
+                projectile.setActive(false); // Deactivate projectile
+                endGame();                  // Player loses
+            }
+        }
+}
 
             // Remove inactive projectiles
             projectiles.removeIf(projectile -> !projectile.isActive());
+            enemyProjectiles.removeIf(projectile -> !projectile.isActive());
 
 
 
@@ -300,15 +324,32 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
         }
     }
 
-   
-   
+    private void enemyFireProjectile(Boat playerBoat) {
+        long currentTime = System.currentTimeMillis();
+    
+        // Check if enough time has passed and if the player is in range
+        if (currentTime - enemyLastShotTime >= 1500 && enemyBoat.isPlayerInRange(playerBoat)) { 
+            int enemyX = enemyBoat.getX();
+            int enemyY = enemyBoat.getY();
+            
+            // Create and add a new projectile to the enemy's projectiles list
+            enemyProjectiles.add(
+                new Projectile(enemyX - 20, enemyY + enemyBoat.getHeight() / 2 - 15, -1, 0, "src/assets/fireball.png")
+            ); // Shoots leftward
+            
+            enemyLastShotTime = currentTime; // Update last shot time
+        }
+    }
+    
     
     private void fireProjectile() {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastShotTime >= 500) { // 0.5-second delay
             int boatX = boat.getX();
             int boatY = boat.getY();
-            projectiles.add(new Projectile(boatX + boat.getWidth(), boatY + boat.getHeight() / 2 - 15));
+            projectiles.add(
+                new Projectile(boatX + boat.getWidth(), boatY + boat.getHeight() / 2 - 15, 1, 0, "src/assets/fireball.png")
+            ); // Shoots rightward
             lastShotTime = currentTime;
         }
     }

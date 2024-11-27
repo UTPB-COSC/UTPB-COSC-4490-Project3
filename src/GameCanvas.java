@@ -1,5 +1,6 @@
 
 import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.awt.*;
@@ -32,6 +33,9 @@ public class GameCanvas extends JPanel {
     private boolean playerWon = false; // Track if the player won
     private List<Projectile> projectiles;
     private long lastShotTime = 0; // Track the last shot time
+    private ParticleSystem particleSystem = new ParticleSystem();
+    
+
 
 
 
@@ -44,7 +48,7 @@ public class GameCanvas extends JPanel {
         gameOver = false;
         setUpMouseListener();
         loadSeaBackground();
-        enemyBoat = new EnemyBoat(400, 600, 300, 500, 700, 700); // Customize patrol area as needed
+        enemyBoat = new EnemyBoat(300, 500, 300, 500, 300, 900);
         bgMusic = new AudioPlayer("src/assets/bgMusic.wav");
         boatCrashSound = new AudioPlayer("src/assets/boatcrash.wav");
         bgMusic.playLoop(); // Start music when the game initializes
@@ -79,6 +83,12 @@ public class GameCanvas extends JPanel {
         rocks.add(new Rock(800, 650, 150, 150, "src/assets/rock1.png"));
         rocks.add(new Rock(600, 100, 120, 130, "src/assets/rock2.png"));
         rocks.add(new Rock(750, 750, 140, 140, "src/assets/rock3.png"));
+        rocks.add(new Rock(920, 100, 170, 200, "src/assets/rock3.png"));
+        rocks.add(new Rock(890, 200, 120, 130, "src/assets/rock2.png"));
+        rocks.add(new Rock(800, 300, 70, 80, "src/assets/rock1.png"));
+
+
+
     }
 
     private void setUpMouseListener() {
@@ -213,6 +223,9 @@ public class GameCanvas extends JPanel {
             enemyBoat.draw(g); // Only draw if the enemy boat isn't destroyed
         }
 
+        // Draw particles
+        particleSystem.draw(g);
+
         g.setColor(Color.GREEN);
 g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.height);
 
@@ -226,6 +239,9 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
             enemyBoat.updatePosition();  // Update enemy position
             debugOverlay.incrementUpdateCount();
             checkWinCondition(); // Check if the player has reached the destination
+            particleSystem.update(); // Update particle effects
+
+            updateProjectiles();
 
             // Check for collisions
             for (Rock rock : rocks) {
@@ -262,11 +278,30 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
         }
     }
 
+    private void updateProjectiles() {
+        for (Projectile projectile : projectiles) {
+            if (projectile.isActive()) {
+                projectile.update();
+    
+                // Check collision with enemy boat
+                if (!enemyBoat.isDestroyed() && projectile.getBounds().intersects(enemyBoat.getBounds())) {
+                    projectile.setActive(false); // Deactivate the projectile
+                    enemyBoat.destroy();        // Destroy the enemy boat
+                    System.out.println("Enemy boat destroyed!");
+    
+                    // Trigger fragmented explosion
+                    createBoatExplosion(
+                        enemyBoat.getImage(),                   // Enemy boat image
+                        enemyBoat.getX(), enemyBoat.getY(),     // Enemy boat position
+                        4                                       // Number of fragments per row/column
+                    );
+                }
+            }
+        }
+    }
+
    
-    // private void handleEnemyHit() {
-    //     System.out.println("Enemy hit!"); // Placeholder
-    //     // Add logic like reducing enemy health or ending the game
-    // }
+   
     
     private void fireProjectile() {
         long currentTime = System.currentTimeMillis();
@@ -277,6 +312,33 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
             lastShotTime = currentTime;
         }
     }
+    private void createBoatExplosion(BufferedImage enemyBoatImage, int x, int y, int numFragments) {
+        // Use the resized width and height from the EnemyBoat instance
+        int fragmentWidth = enemyBoatImage.getWidth() / numFragments;
+        int fragmentHeight = enemyBoatImage.getHeight() / numFragments;
+    
+        for (int i = 0; i < numFragments; i++) {
+            for (int j = 0; j < numFragments; j++) {
+                // Extract a fragment of the enemy boat image
+                BufferedImage fragment = enemyBoatImage.getSubimage(
+                    i * fragmentWidth, j * fragmentHeight, fragmentWidth, fragmentHeight);
+    
+                // Randomize movement speed
+                int dx = (int) (Math.random() * 10 - 5); // Random horizontal velocity
+                int dy = (int) (Math.random() * 10 - 5); // Random vertical velocity
+                int lifetime = (int) (Math.random() * 30 + 20); // Random lifetime
+    
+                // Add particle to the particle system
+                particleSystem.addParticle(new Particle(
+                    x + i * fragmentWidth, // Initial x position of the fragment
+                    y + j * fragmentHeight, // Initial y position of the fragment
+                    dx, dy, lifetime, fragment
+                ));
+            }
+        }
+    }
+    
+    
 
     private void endGame() {
         gameOver = true;

@@ -26,18 +26,27 @@ public class EnemyBoat {
         this.patrolX2 = patrolX2;
         this.patrolY2 = patrolY2;
         this.dx = speed;
-        this.dy = 0;
+        this.dy = speed;
         loadEnemyBoatImage();
     }
-
+    private BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) {
+        BufferedImage resizedImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics g = resizedImage.getGraphics();
+        g.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
+        g.dispose();
+        return resizedImage;
+    }
+    
     private void loadEnemyBoatImage() {
         try {
-            enemyBoatImage = ImageIO.read(new File("src/assets/enemyboat1.png"));
+            BufferedImage originalImage = ImageIO.read(new File("src/assets/enemyboat1.png"));
+            enemyBoatImage = resizeImage(originalImage, WIDTH, HEIGHT); // Resize to match display size
         } catch (IOException e) {
             System.out.println("Error loading enemy boat image.");
             e.printStackTrace();
         }
     }
+    
 
     public void updatePosition() {
         if (!destroyed) { // Only update position if not destroyed
@@ -56,9 +65,10 @@ public class EnemyBoat {
 
     public void draw(Graphics g) {
         if (!destroyed && enemyBoatImage != null) { // Only draw if not destroyed
-            g.drawImage(enemyBoatImage, x, y, WIDTH, HEIGHT, null);
+            g.drawImage(enemyBoatImage, x, y, null); 
         }
     }
+    
 
     public Rectangle getBounds() {
         if (destroyed) {
@@ -73,6 +83,24 @@ public class EnemyBoat {
 
     public boolean isDestroyed() {
         return destroyed;
+    }
+    // Getters
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+    public BufferedImage  getImage() {
+        return enemyBoatImage;
+    }
+    public int getWidth() {
+        return WIDTH; // Return the resized width
+    }
+
+    public int getHeight() {
+        return HEIGHT; // Return the resized height
     }
 
     // Optional: Check if player boat is in range

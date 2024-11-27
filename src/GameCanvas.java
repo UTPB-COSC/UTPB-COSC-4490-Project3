@@ -331,15 +331,27 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
         if (currentTime - enemyLastShotTime >= 1500 && enemyBoat.isPlayerInRange(playerBoat)) { 
             int enemyX = enemyBoat.getX();
             int enemyY = enemyBoat.getY();
+            int playerX = playerBoat.getX();
+            int playerY = playerBoat.getY();
+    
+            // Calculate the direction vector from enemy to player
+            double directionX = playerX - enemyX;
+            double directionY = playerY - enemyY;
             
-            // Create and add a new projectile to the enemy's projectiles list
+            // Normalize the direction vector
+            double magnitude = Math.sqrt(directionX * directionX + directionY * directionY);
+            directionX /= magnitude;
+            directionY /= magnitude;
+    
+            // Create and add a new projectile that moves towards the player
             enemyProjectiles.add(
-                new Projectile(enemyX - 20, enemyY + enemyBoat.getHeight() / 2 - 15, -1, 0, "src/assets/fireball.png")
-            ); // Shoots leftward
-            
+                new Projectile(enemyX, enemyY + enemyBoat.getHeight() / 2 - 15, directionX, directionY, "src/assets/fireball.png")
+            );
+    
             enemyLastShotTime = currentTime; // Update last shot time
         }
     }
+    
     
     
     private void fireProjectile() {

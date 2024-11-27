@@ -17,6 +17,10 @@ public class EnemyBoat {
     private final int patrolX1, patrolY1, patrolX2, patrolY2; // Patrol boundaries
     private final int speed = 2;  // Speed of the enemy boat
     private boolean destroyed = false; // Flag to track if the boat is destroyed
+    private boolean destroying = false; // Flag to indicate the boat is in the process of being destroyed
+    private long destructionStartTime = 0; // Time when the destruction started
+    private final int DESTRUCTION_DURATION = 500; // Duration of particle effect in milliseconds
+
 
     public EnemyBoat(int startX, int startY, int patrolX1, int patrolY1, int patrolX2, int patrolY2) {
         this.x = startX;
@@ -49,10 +53,17 @@ public class EnemyBoat {
     
 
     public void updatePosition() {
-        if (!destroyed) { // Only update position if not destroyed
+        if (destroying) {
+            long elapsedTime = System.currentTimeMillis() - destructionStartTime;
+            if (elapsedTime >= DESTRUCTION_DURATION) {
+                destroying = false;
+                destroyed = true; // Mark the boat as fully destroyed
+            }
+        } else if (!destroyed) {
+            // Normal movement logic
             x += dx;
             y += dy;
-
+    
             // Reverse direction when reaching patrol area boundaries
             if (x <= patrolX1 || x >= patrolX2 - WIDTH) {
                 dx = -dx;
@@ -62,12 +73,19 @@ public class EnemyBoat {
             }
         }
     }
-
+    
     public void draw(Graphics g) {
-        if (!destroyed && enemyBoatImage != null) { // Only draw if not destroyed
-            g.drawImage(enemyBoatImage, x, y, null); 
+        if (destroying) {
+            // Draw particle effect
+            BufferedImage enemyFragment = enemyBoatImage.getSubimage(0, 0, WIDTH / 2, HEIGHT / 2);
+            g.drawImage(enemyFragment, x, y, WIDTH / 2, HEIGHT / 2, null);
+            // Additional particle drawing logic can be added here
+        } else if (!destroyed && enemyBoatImage != null) {
+            // Draw the enemy boat if not destroyed
+            g.drawImage(enemyBoatImage, x, y, null);
         }
     }
+    
     
 
     public Rectangle getBounds() {
@@ -78,8 +96,12 @@ public class EnemyBoat {
     }
 
     public void destroy() {
-        destroyed = true; // Mark the boat as destroyed
+        if (!destroying && !destroyed) {
+            destroying = true;
+            destructionStartTime = System.currentTimeMillis();
+        }
     }
+    
 
     public boolean isDestroyed() {
         return destroyed;

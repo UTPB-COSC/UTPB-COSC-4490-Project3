@@ -116,20 +116,25 @@ public class GameCanvas extends JPanel {
     private void generateLevel2Rocks() {
         // Example static positions for level 2
         rocks.add(new Rock(100, 100, 30, 30, "src/assets/rock1.png"));
+        rocks.add(new Rock(250, 200, 30, 30, "src/assets/rock2.png"));
         rocks.add(new Rock(350, 400, 60, 60, "src/assets/rock3.png"));
         rocks.add(new Rock(300, 100, 70, 70, "src/assets/rock1.png"));
         rocks.add(new Rock(400, 500, 70, 80, "src/assets/rock2.png"));
         rocks.add(new Rock(300, 100, 70, 70, "src/assets/rock1.png"));
-        rocks.add(new Rock(500, 400, 30, 20, "src/assets/rock2.png"));
+        rocks.add(new Rock(500, 300, 90, 40, "src/assets/rock3.png"));
+        rocks.add(new Rock(400, 250, 150, 60, "src/assets/rock1.png"));
+        rocks.add(new Rock(300, 300, 150, 100, "src/assets/rock2.png"));
+
+
         // Add more rocks with specific positions and images...
     }
     
     private void generateLevel3Rocks() {
         // Example static positions for level 3
-        rocks.add(new Rock(200, 200, 50, 50, "src/assets/rock1.png"));
+        rocks.add(new Rock(10, 700, 50, 50, "src/assets/rock1.png"));
         rocks.add(new Rock(500, 150, 60, 60, "src/assets/rock2.png"));
         rocks.add(new Rock(650, 400, 55, 55, "src/assets/rock3.png"));
-        rocks.add(new Rock(300, 300, 100, 100, "src/assets/rock1.png"));
+        rocks.add(new Rock(40, 700, 100, 100, "src/assets/rock1.png"));
         rocks.add(new Rock(600, 250, 110, 110, "src/assets/rock2.png"));
         rocks.add(new Rock(700, 400, 90, 90, "src/assets/rock3.png"));
         rocks.add(new Rock(800, 650, 150, 150, "src/assets/rock1.png"));
@@ -164,8 +169,8 @@ public class GameCanvas extends JPanel {
                 break;
             case 2:
                 // Fixed winning point for level 2
-                x = screenWidth / 2;
-                y = screenHeight / 2;
+                x = (int) (screenWidth / 1.5); 
+                y = (int) (screenHeight / 1.75);
                 break;
             case 3:
                 // Fixed winning point for level 3
@@ -191,11 +196,11 @@ public class GameCanvas extends JPanel {
                 break;
             case 2:
                 // Level 2: Larger patrol area
-                enemyBoat.setPatrolArea(200, 300, 600, 800);  // Example patrol area
+                enemyBoat.setPatrolArea(100, 100, 800, 600);  // Example patrol area
                 break;
             case 3:
                 // Level 3: Maximum patrol area
-                enemyBoat.setPatrolArea(100, 200, 700, 800); // Example patrol area
+                enemyBoat.setPatrolArea(50, 20, 600, 700); // Example patrol area
                 break;
             default:
                 // Default fallback

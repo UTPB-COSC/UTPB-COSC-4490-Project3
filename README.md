@@ -1,10 +1,10 @@
-# Pirate Battleship Game (COSC 4490 - Project 2, Aswin)
+# Pirate Battleship Game (COSC 4490 - Project 3, Aswin)
 
 ## Overview
 
-Welcome to **Pirate Battleship**, a 2D game where you control a pirate ship navigating treacherous seas filled with obstacles like rocks and enemy threats. The objective is to safely guide your ship while avoiding collisions with rocks and enemy attacks. A collision with a rock or an enemy attack results in game over. However, you can restart and try again by pressing the "R" key.
+Welcome to **Pirate Battleship**, a 2D game where you control a pirate ship navigating treacherous seas filled with obstacles, enemy threats, and procedurally generated levels. The objective is to safely guide your ship while avoiding collisions with rocks and enemy attacks. Use your ship's cannon to destroy enemy boats and progress through dynamically generated levels. A collision with a rock or an enemy attack results in game over. However, you can restart and try again by pressing the "R" key.
 
-Built in Java with Swing for graphics, this game includes custom assets for the pirate ship, rocks, enemies, and sea background, along with sound effects and a debug mode for development insights.
+Built in Java with Swing for graphics, this game includes custom assets for the pirate ship, rocks, enemies, projectiles, and sea background, along with sound effects and a debug mode for development insights.
 
 ## Features
 
@@ -12,12 +12,19 @@ Built in Java with Swing for graphics, this game includes custom assets for the 
 - **Pause Menu**: A menu allowing players to pause, resume, reset, or quit the game.
 - **Boat Navigation**: Use the arrow keys to control the pirate ship’s movement.
 - **Obstacle Collision**: Game ends if the ship collides with a rock or an enemy.
-- **Enemy Boat**: AI-controlled enemy boat that patrols a specific area and engages the player's boat. (still figuring out the AI but the art is there)
+- **Projectile System**:
+  - Player can fire projectiles by pressing the **Spacebar**.
+  - Enemy boats fire projectiles when the player is within range.
+  - Particle effects simulate the destruction of enemy boats when hit by a player projectile.
+- **Enemy AI**:
+  - AI-controlled enemy boats patrol specific areas and engage the player when in range.
+  - Enemy boats dynamically detect and shoot at the player.
+- **Procedural Levels**: Each game won generates a new level layout with varying obstacle positions and enemy patrol areas. Player can press "N" key one a level is won to go to the next level.
 - **Debug Mode**: A toggle-able debug mode displaying FPS, update stats, frame counters, hitboxes, and other debugging information.
 - **Restart Game**: Press "R" to restart the game after it ends.
-- **Static Map**: A static sea map with rocks at fixed positions in each playthrough.
-- **Sound Effects**: Audio feedback when the boat moves.
-- **Custom Assets**: Assets for the boat, sea, rocks, and enemy boat.
+- **Dynamic Maps**: Procedurally generated maps with unique obstacles and enemy patrol areas for each playthrough.
+- **Sound Effects**: Audio feedback for movement, collisions, and projectile firing.Background music that pauses when game is paused and restarts upon resetting the game.
+- **Custom Assets**: Assets for the boat, sea, rocks, projectiles, and enemy boats.
 
 ## Installation
 
@@ -42,8 +49,10 @@ Built in Java with Swing for graphics, this game includes custom assets for the 
 ## Controls
 
 - **Arrow Keys**: Move the boat up, down, left, and right.
+- **Spacebar**: Fire projectiles at enemies.
 - **P Key**: Pause or resume the game.
 - **R Key**: Restart the game after the boat collides or if paused.
+- **N Key**: Takes you to next level when level is completed.
 - **Q Key**: Quit the game.
 - **D Key**: Toggle debug mode to display game stats, hitboxes, and counters.
 - **Mouse Click**: Start the game by clicking the "Start Game" button on the title screen.
@@ -53,35 +62,51 @@ Built in Java with Swing for graphics, this game includes custom assets for the 
 - **Boat**: A pirate ship controlled by the player (`boat.png`).
 - **Sea**: Background of the game (`sea.gif`).
 - **Rocks**: Various rock obstacles of different sizes (`rock1.png`, `rock2.png`, `rock3.png`).
-- **Enemy Boat**: An AI-controlled enemy boat that patrols and engages (`enemyBoat.png`).
+- **Enemy Boat**: AI-controlled enemy boats that patrol and engage (`enemyBoat1.png`).
+- **Projectiles**: Cannonballs fired by the player and enemy boats (`Fireball.png`).
+- **BG MUSIC**: Background music (`bgMusic.wav`).
+-- **Sound effects**: sound effects (`boatcrash.wav`).
 
 ## How to Play
 
 1. Launch the game by running `PirateBattleshipGame.java`.
 2. On the title screen, click "Start Game" to begin.
 3. Use the arrow keys to navigate the pirate ship across the sea, avoiding rocks and enemy patrols.
-4. Press "P" to pause or resume the game.
-5. Press "R" to restart the game if you lose.
-6. Toggle the debug mode with "D" to see stats like FPS, counters, and hitboxes for development insights.
+4. Press **Spacebar** to fire at enemy boats.
+5. Press "P" to pause or resume the game.
+6. Press "R" to restart the game if you lose.
+7. Press "N" to go to next level once you complete a level.
+8. Toggle the debug mode with "D" to see stats like FPS, counters, and hitboxes for development insights.
 
 ## Customization
 
 - **Obstacle Placement**: Adjust the positions and sizes of the rocks by modifying the `generateRocks()` method in `GameCanvas.java`.
-- **Assets**: Replace the game assets (ship, rocks, sea, enemy boat) by adding new images to the `src/assets` folder and updating their file paths in the code.
+- **Enemy Behavior**: Modify patrol areas and detection range in `EnemyBoat.java`.
+- **Assets**: Replace the game assets (ship, rocks, sea, projectiles, enemy boat) by adding new images to the `src/assets` folder and updating their file paths in the code.
 - **Sound Effects**: Customize sounds by adding audio files to the assets folder and adjusting their file paths in the game code.
 
-## Project 2 Updates
+## Project Updates
 
-- **Enemy Boat Art**: Added new visuals for the enemy boat.
-- **Sound Effects**: Added sound when the boat moves.
-- **Pause Menu**: Added a pause menu allowing players to pause, resume, reset, and quit the game.
-- **Debug Mode**: Introduced a debug mode to show FPS, update stats, frame counters, hitboxes, and more.
+### **Projectile System**:
+- Player fires projectiles using the Spacebar.
+- Enemy AI detects the player and fires projectiles.
+- Particle effects simulate destruction when an enemy boat is hit.
+
+### **Enemy AI**:
+- Enemy boats dynamically patrol specified areas.
+- AI detects the player in range and engages with projectiles.
+
+### **Procedural Levels**:
+- Each game reset generates a new level layout with dynamic obstacles and enemy patrol areas.
+
+### **Debugging Enhancements**:
+- Enhanced debug mode with hitboxes for projectiles and improved performance stats.
 
 ## Future Enhancements
 
-- **Sound Effects & Music**: Adding more sound effects and background music for an immersive experience.
-- **Difficulty Levels**: Dynamic obstacles and enemy behavior for varying difficulty levels.
-- **Advanced Combat**: Allow the player to engage in combat with the enemy boat and any future AI threats.
+- **Advanced AI**: Smarter enemy behavior and dynamic difficulty adjustment.
+- **Level Progression**: Adding additional levels with increasing complexity.
+- **Boss Battles**: Introduce larger enemy ships or stationary towers as end-level challenges.
 
 ## Credits
 

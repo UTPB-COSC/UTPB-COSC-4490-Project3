@@ -15,7 +15,7 @@ public class EnemyBoat {
     private final int WIDTH = 60;
     private final int HEIGHT = 40;
 
-    private final int patrolX1, patrolY1, patrolX2, patrolY2;
+    private int patrolX1, patrolY1, patrolX2, patrolY2; // Patrol area coordinates
     private final int speed = 2;
 
     private boolean destroyed = false;
@@ -133,17 +133,20 @@ public class EnemyBoat {
     public boolean isDestroyed() {
         return destroyed;
     }
-       // Getters
-       public int getX() {
+
+    // Getters
+    public int getX() {
         return x;
     }
 
     public int getY() {
         return y;
     }
-    public BufferedImage  getImage() {
+
+    public BufferedImage getImage() {
         return enemyBoatImage;
     }
+
     public int getWidth() {
         return WIDTH; // Return the resized width
     }
@@ -162,5 +165,13 @@ public class EnemyBoat {
         double distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
 
         return distance <= detectionRange;
+    }
+
+    // Setter method to update patrol area
+    public void setPatrolArea(int patrolX1, int patrolY1, int patrolX2, int patrolY2) {
+        this.patrolX1 = patrolX1;
+        this.patrolY1 = patrolY1;
+        this.patrolX2 = patrolX2;
+        this.patrolY2 = patrolY2;
     }
 }

@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 
+
+
 public class GameCanvas extends JPanel {
     private int screenWidth = 1000;
     private int screenHeight = 800;
@@ -36,6 +38,8 @@ public class GameCanvas extends JPanel {
     private long lastShotTime = 0; // Track the last shot time
     private long enemyLastShotTime = 0; // Last shot timestamp for enemy boat
     private ParticleSystem particleSystem = new ParticleSystem();
+    private int currentLevel = 1;
+
     
     
 
@@ -51,7 +55,7 @@ public class GameCanvas extends JPanel {
         gameOver = false;
         setUpMouseListener();
         loadSeaBackground();
-        enemyBoat = new EnemyBoat(300, 500, 300, 500, 300, 900);
+        // enemyBoat = new EnemyBoat(300, 500, 300, 500, 300, 900);
         bgMusic = new AudioPlayer("src/assets/bgMusic.wav");
         boatCrashSound = new AudioPlayer("src/assets/boatcrash.wav");
         bgMusic.playLoop(); // Start music when the game initializes
@@ -78,7 +82,50 @@ public class GameCanvas extends JPanel {
     }
 
     public void generateRocks() {
-        // Adding rocks of different sizes at various positions
+        rocks.clear(); // Clear old rocks
+        int numRocks = 5 + currentLevel * 2; // Base rock count with level scaling
+        
+        switch (currentLevel) {
+            case 1:
+                // Generate a specific pattern for level 1
+                generateLevel1Rocks();
+                break;
+            case 2:
+                // Generate a specific pattern for level 2
+                generateLevel2Rocks();
+                break;
+            case 3:
+                // Generate a specific pattern for level 3
+                generateLevel3Rocks();
+                break;
+            default:
+                // Default to random if the level is unknown
+                generateRandomRocks(numRocks);
+                break;
+        }
+    }
+    
+    private void generateLevel1Rocks() {
+        // Example static positions for level 1
+        rocks.add(new Rock(100, 150, 40, 40, "src/assets/rock1.png"));
+        rocks.add(new Rock(200, 300, 50, 50, "src/assets/rock2.png"));
+        rocks.add(new Rock(600, 600, 50, 50, "src/assets/rock3.png"));
+        // Add more rocks with specific positions and images...
+    }
+    
+    private void generateLevel2Rocks() {
+        // Example static positions for level 2
+        rocks.add(new Rock(100, 100, 30, 30, "src/assets/rock1.png"));
+        rocks.add(new Rock(350, 400, 60, 60, "src/assets/rock3.png"));
+        rocks.add(new Rock(300, 100, 70, 70, "src/assets/rock1.png"));
+        rocks.add(new Rock(400, 500, 70, 80, "src/assets/rock2.png"));
+        rocks.add(new Rock(300, 100, 70, 70, "src/assets/rock1.png"));
+        rocks.add(new Rock(500, 400, 30, 20, "src/assets/rock2.png"));
+        // Add more rocks with specific positions and images...
+    }
+    
+    private void generateLevel3Rocks() {
+        // Example static positions for level 3
         rocks.add(new Rock(200, 200, 50, 50, "src/assets/rock1.png"));
         rocks.add(new Rock(500, 150, 60, 60, "src/assets/rock2.png"));
         rocks.add(new Rock(650, 400, 55, 55, "src/assets/rock3.png"));
@@ -92,10 +139,72 @@ public class GameCanvas extends JPanel {
         rocks.add(new Rock(890, 200, 120, 130, "src/assets/rock2.png"));
         rocks.add(new Rock(800, 300, 70, 80, "src/assets/rock1.png"));
 
-
-
+        // Add more rocks with specific positions and images...
     }
+    
+    private void generateRandomRocks(int numRocks) {
+        for (int i = 0; i < numRocks; i++) {
+            int x = (int) (Math.random() * screenWidth * 0.8); // Random x, avoiding edges
+            int y = (int) (Math.random() * screenHeight * 0.8);
+            int size = 30 + (int) (Math.random() * 40); // Rock size varies
+            rocks.add(new Rock(x, y, size, size, "src/assets/rock" + (i % 3 + 1) + ".png"));
+        }
+    }
+    
 
+    private void relocateWinningPoint() {
+        int x = 0, y = 0;
+    
+        // Define fixed winning points for each level
+        switch (currentLevel) {
+            case 1:
+                // Fixed winning point for level 1
+                x = (int) (screenWidth / 1.75); 
+                y = screenHeight / 2;
+                break;
+            case 2:
+                // Fixed winning point for level 2
+                x = screenWidth / 2;
+                y = screenHeight / 2;
+                break;
+            case 3:
+                // Fixed winning point for level 3
+                x = (int) (screenWidth * 0.75);  // Three-quarters of the screen width
+                y = (int) (screenHeight * 0.75); // Three-quarters of the screen height
+                break;
+            default:
+                // Default fallback if somehow the level is out of expected range
+                x = screenWidth / 2;
+                y = screenHeight / 2;
+                break;
+        }
+    
+        // Set the winning point to the calculated location
+        winningPoint.setLocation(x, y);
+    }
+    
+    private void updateEnemyBoatPatrolArea(int currentLevel) {
+        switch (currentLevel) {
+            case 1:
+                // Level 1: Smaller patrol area
+                enemyBoat.setPatrolArea(300, 500, 500, 700);  // Example patrol area
+                break;
+            case 2:
+                // Level 2: Larger patrol area
+                enemyBoat.setPatrolArea(200, 300, 600, 800);  // Example patrol area
+                break;
+            case 3:
+                // Level 3: Maximum patrol area
+                enemyBoat.setPatrolArea(100, 200, 700, 800); // Example patrol area
+                break;
+            default:
+                // Default fallback
+                enemyBoat.setPatrolArea(300, 500, 500, 700);
+                break;
+        }
+    }
+    
+    
     private void setUpMouseListener() {
         addMouseListener(new MouseAdapter() {
             @Override
@@ -119,41 +228,46 @@ public class GameCanvas extends JPanel {
     }
 
     @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-    
-        if (onTitleScreen) {
-            drawTitleScreen(g);
-            if (bgMusic != null && !bgMusic.isPlaying()) {
-                bgMusic.playLoop(); // Play music on title screen
-            }
-        } else if (gameOver) {
-            if (bgMusic != null) {
-                bgMusic.stop(); // Stop music on game over
-            }
-            if (playerWon) {
-                drawWinScreen(g); // Show "You Win" screen
-            } else {
-                drawGameOverScreen(g); // Show "Game Over" screen
-            }
-        } else if (currentState == GameState.PAUSED) {
-            if (bgMusic != null) {
-                bgMusic.pause(); // Pause audio
-            }
-            drawGameElements(g);
-            drawPauseMenu(g);
-        } else { // Game is running
-            if (bgMusic != null && !bgMusic.isPlaying()) {
-                bgMusic.resume(); // Resume audio
-            }
-            for (Projectile projectile : projectiles) {
-                projectile.draw(g);
-            }
-            drawGameElements(g);
-            debugOverlay.draw(g, boat, enemyBoat, rocks);
+public void paintComponent(Graphics g) {
+    super.paintComponent(g);
+
+    if (onTitleScreen) {
+        drawTitleScreen(g);
+        if (bgMusic != null && !bgMusic.isPlaying()) {
+            bgMusic.playLoop(); // Play music on title screen
         }
+    } else if (gameOver) {
+        if (bgMusic != null) {
+            bgMusic.stop(); // Stop music on game over
+        }
+        if (playerWon) {
+            drawWinScreen(g); // Show "You Win" screen with "Next Level" option
+        } else {
+            drawGameOverScreen(g); // Show "Game Over" screen
+        }
+    } else if (currentState == GameState.PAUSED) {
+        if (bgMusic != null) {
+            bgMusic.pause(); // Pause audio
+        }
+        drawGameElements(g);
+        drawPauseMenu(g);
+    } else { // Game is running
+        if (bgMusic != null && !bgMusic.isPlaying()) {
+            bgMusic.resume(); // Resume audio
+        }
+        for (Projectile projectile : projectiles) {
+            projectile.draw(g); // Draw projectiles
+        }
+        drawGameElements(g); // Draw other game elements like boat, rocks, etc.
+        debugOverlay.draw(g, boat, enemyBoat, rocks); // Draw debug info
+
+        // Display the current level at the top left corner
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Arial", Font.BOLD, 18));
+        g.drawString("Level: " + currentLevel, 20, 20);
     }
-    
+}
+
     
 
     private void drawTitleScreen(Graphics g) {
@@ -326,9 +440,8 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
 
     private void enemyFireProjectile(Boat playerBoat) {
         long currentTime = System.currentTimeMillis();
-    
-        // Check if enough time has passed and if the player is in range
-        if (currentTime - enemyLastShotTime >= 1500 && enemyBoat.isPlayerInRange(playerBoat)) { 
+        int fireInterval = Math.max(1500 - currentLevel * 100, 500); // Faster shooting as levels progress
+        if (currentTime - enemyLastShotTime >= fireInterval && enemyBoat.isPlayerInRange(playerBoat) && !enemyBoat.isDestroyed()) {
             int enemyX = enemyBoat.getX();
             int enemyY = enemyBoat.getY();
             int playerX = playerBoat.getX();
@@ -391,6 +504,7 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
         }
     }
     
+  
     
 
     private void endGame() {
@@ -399,35 +513,28 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
         bgMusic.stop(); // Stop background music
         boatCrashSound.playOnce();
     }
-
     public void resetGame() {
-        // Reset the player's boat position
         boat.resetPosition();
-        enemyBoat = new EnemyBoat(400, 600, 300, 500, 700, 700);
-
-        // Reset enemy boat and rocks (if applicable)
-        if (enemyBoat != null) {
-            enemyBoat.updatePosition(); // Reset enemy boat position
-        }
-        
-        projectiles.clear(); // Remove any existing projectiles
-
+        generateRocks(); // Generate new level layout
     
-        // Reset game state
+        // Set up the enemy boat with a dynamic patrol area based on the current level
+        enemyBoat = new EnemyBoat(400, 600, 300, 500, 700, 700); // Initial position
+        updateEnemyBoatPatrolArea(currentLevel); // Update patrol area based on the current level
+        
+        relocateWinningPoint(); // Move the winning point
+        projectiles.clear();
+        enemyProjectiles.clear();
         gameOver = false;
-        playerWon = false; // Reset win condition
+        playerWon = false;
         currentState = GameState.PLAYING;
     
-        // Restart the background music
         if (bgMusic != null) {
-            bgMusic.stop();  // Stop current music
-            bgMusic.playLoop();  // Start music again in a loop
+            bgMusic.stop();
+            bgMusic.playLoop(); // Restart background music
         }
     
-        // Redraw the game state
         repaint();
     }
-    
 
 
 
@@ -441,31 +548,38 @@ private void drawWinScreen(Graphics g) {
     g.setColor(Color.CYAN);
     g.fillRect(0, 0, screenWidth, screenHeight);
 
-    // Draw other game elements like rocks and boat
-    for (Rock rock : rocks) {
-        rock.draw(g);
-    }
+    // // Draw other game elements like rocks and boat
+    // for (Rock rock : rocks) {
+    //     rock.draw(g);
+    // }
     boat.draw(g);
 
-    // Display "You Win" message
+    // Display "Level Complete!" message
     g.setColor(Color.BLACK);
     g.setFont(new Font("Arial", Font.BOLD, 36));
-    g.drawString("YOU WIN!", screenWidth / 2 - 100, screenHeight / 2 - 40);
+    g.drawString("LEVEL COMPLETE!", screenWidth / 2 - 150, screenHeight / 2 - 40);
 
     // Display options
     g.setFont(new Font("Arial", Font.PLAIN, 20));
-    g.drawString("Press 'R' to Restart", screenWidth / 2 - 100, screenHeight / 2 + 20);
-    g.drawString("Press 'N' for Next Level", screenWidth / 2 - 120, screenHeight / 2 + 50);
-}
+    g.drawString("Press 'R' to Restart Level", screenWidth / 2 - 130, screenHeight / 2 + 20);
 
-public void winGame() {
-    if (!gameOver) {
-        gameOver = true;
-        playerWon = true; // Mark as a win
-        bgMusic.stop();
-        repaint();
+    // Check if the level cap is reached
+    if (currentLevel < 3) {
+        g.drawString("Press 'N' for Next Level", screenWidth / 2 - 130, screenHeight / 2 + 50);
+    } else {
+        g.drawString("Maximum Level Reached", screenWidth / 2 - 140, screenHeight / 2 + 50);
     }
 }
+
+
+public void winGame() {
+    playerWon = true;
+    gameOver = true;  // Set the game over state to trigger win screen
+    repaint();  // Call repaint to trigger drawing of win screen
+}
+
+
+
     private void drawPauseMenu(Graphics g) {
         g.setColor(new Color(0, 0, 0, 150));
         g.fillRect(0, 0, screenWidth, screenHeight);
@@ -498,15 +612,30 @@ public void winGame() {
             } else {
                 boat.setDirection(keyCode); // Move the boat
             }
+    
+            if (playerWon && keyCode == KeyEvent.VK_N) {
+                if (currentLevel < 3) {
+                    currentLevel++;  // Advance to the next level
+                    resetGame();     // Reset the game with the new level's map
+                    relocateWinningPoint();  // Relocate the winning point for the new level
+                    
+                    // Adjust the enemy boat's patrol area based on the level
+                    updateEnemyBoatPatrolArea(currentLevel);
+    
+                    gameOver = false;  // Reset the game-over state to continue playing
+                } else {
+                    System.out.println("You've completed all levels!");
+                    resetGame();  // Optionally reset the game if completed
+                }
+            }
+            
+            
         } else if (currentState == GameState.PAUSED) {
             if (keyCode == KeyEvent.VK_P) {
                 currentState = GameState.PLAYING; // Resume the game
             }
         } else if (gameOver) {
-            if (playerWon && keyCode == KeyEvent.VK_N) {
-                // Placeholder for "Next Level" feature
-                System.out.println("Next Level feature coming soon!");
-            }
+            // Handle game over actions (e.g., restarting)
         }
     
         // Refresh the game state visually

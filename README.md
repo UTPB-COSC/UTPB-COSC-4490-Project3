@@ -99,6 +99,40 @@ Built in Java with Swing for graphics, this game includes custom assets for the 
 ### **Procedural Levels**:
 - Each game reset generates a new level layout with dynamic obstacles and enemy patrol areas.
 
+### UDP Multiplayer Mode
+
+#### Overview
+The game includes a **UDP-based multiplayer mode**, allowing players to interact and compete in real-time. A client-server architecture is used, where the server manages game state and synchronizes player actions.
+
+#### How It Works
+- **Server**: 
+  - Listens on port **9876** for incoming messages.
+  - Receives player actions (e.g., movements, firing projectiles).
+  - Broadcasts updated game state to all connected clients.
+- **Client**:
+  - Sends player actions to the server (e.g., movement or attack commands).
+  - Receives game state updates from the server and reflects changes in the local game environment.
+
+#### Running the Multiplayer Mode
+1. **Start the Server**:
+   - Run the `GameServer` class to initialize the server:
+     ```bash
+     java GameServer
+     ```
+   - The server will log all incoming player actions and broadcast updates.
+
+2. **Start the Client**:
+   - Run the `PirateBattleshipGame` class to start the game as a client.
+   - The game client will:
+     - Send player movements and actions to the server.
+     - Display game updates based on server responses.
+
+#### Benefits
+- Enables real-time interaction between multiple players.
+- Synchronizes game state across clients for consistent gameplay.
+- Introduces competitive and cooperative multiplayer possibilities.
+
+
 ### **Debugging Enhancements**:
 - Enhanced debug mode with hitboxes for projectiles and improved performance stats.
 

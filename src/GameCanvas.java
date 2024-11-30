@@ -273,7 +273,15 @@ public void paintComponent(Graphics g) {
     }
 }
 
-    
+public void updateFromServer(String gameState) {
+    // Parse and update game state
+    String[] entities = gameState.split(";");
+    for (String entity : entities) {
+        String[] data = entity.split(",");
+        // Update positions or state of players, projectiles, etc.
+    }
+}
+
 
     private void drawTitleScreen(Graphics g) {
         // Background color

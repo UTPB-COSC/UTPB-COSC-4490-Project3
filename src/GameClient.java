@@ -1,6 +1,7 @@
 import java.net.*;
 
 public class GameClient {
+
     private static final int SERVER_PORT = 9876;
     private static final String SERVER_ADDRESS = "localhost";
     private static final int BUFFER_SIZE = 1024;
@@ -24,6 +25,14 @@ public class GameClient {
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         socket.receive(packet);
         return new String(packet.getData(), 0, packet.getLength());
+    }
+
+    // Gracefully close the socket when done
+    public void close() {
+        if (socket != null && !socket.isClosed()) {
+            socket.close();  // Close the socket
+            System.out.println("GameClient socket closed.");
+        }
     }
 
     public static void main(String[] args) throws Exception {

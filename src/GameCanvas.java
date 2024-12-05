@@ -123,6 +123,9 @@ public class GameCanvas extends JPanel implements Runnable {
                         g.drawString("Continue Playing(P)", (getWidth() / 2) - 100, getHeight() / 2 + 10);
                         g.drawString("New Game(N)", (getWidth() / 2) - 100, getHeight() / 2 + 50);
                         g.drawString("Exit(E)", (getWidth() / 2) - 100, getHeight() / 2 + 90);
+                        g.drawString("Press W, A, S, D to move player", (getWidth() / 2) - 200, getHeight() / 2 + 130);
+                        g.drawString("Press K to turn on and off debug mode", (getWidth() / 2) - 200, getHeight() / 2 + 170);
+                        
 
                     } else if (game.gameState == GameState.GAME_OVER) {
                         g.setColor(Color.RED);
@@ -130,6 +133,8 @@ public class GameCanvas extends JPanel implements Runnable {
                         g.setFont(new Font("Arial", Font.PLAIN, 30));
                         g.drawString("New Game(N)", (getWidth() / 2) - 100, getHeight() / 2 + 10);
                         g.drawString("Exit(E)", (getWidth() / 2) - 100, getHeight() / 2 + 50);
+                        g.drawString("Press W, A, S, D to move player", (getWidth() / 2) - 200, getHeight() / 2 + 90);
+                        g.drawString("Press K to turn on and off debug mode", (getWidth() / 2) - 200, getHeight() / 2 + 130);
                     } else if (game.gameState == GameState.GAME_WON) {
                         g.setColor(Color.GREEN);
                         g.setFont(new Font("Arial", Font.BOLD, 30));
@@ -137,6 +142,8 @@ public class GameCanvas extends JPanel implements Runnable {
                         g.setFont(new Font("Arial", Font.PLAIN, 30));
                         g.drawString("New Game(N)", (getWidth() / 2) - 100, getHeight() / 2 + 10);
                         g.drawString("Exit(E)", (getWidth() / 2) - 100, getHeight() / 2 + 50);
+                        g.drawString("Press W, A, S, D to move player", (getWidth() / 2) - 200, getHeight() / 2 + 90);
+                        g.drawString("Press K to turn on and off debug mode", (getWidth() / 2) - 200, getHeight() / 2 + 130);
                     }
                 }
             }

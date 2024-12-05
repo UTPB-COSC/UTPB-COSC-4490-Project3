@@ -10,7 +10,8 @@
 - **Graphics & Animations**: Custom images and animations for bombs and explosions. \*Fingers Crossed\* the picture for the bomb explosion works
 - **Sound Effects**: Explosion sound when the bomb detonates.
 - **Debug Mode**: Displays additional information, such as FPS, player and enemy positions, and the bomb’s blast radius.
-
+## UDP Implementation
+This game includes an implementation of UDP for networked communication, but please note that it is still somewhat iffy. The network synchronization may not be perfect and might require further adjustments for smoother multiplayer functionality.
 ## Project Structure
 
 ### `GameCanvas` Class

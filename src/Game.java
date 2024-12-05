@@ -35,7 +35,7 @@ public class Game implements Runnable {
     public Game() {
         frame = new JFrame("BombMakeGoBoom");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize((mapWidth * tileSize) + 200, (mapHeight * tileSize) + 80);
+        frame.setSize((mapWidth * tileSize) + 15, (mapHeight * tileSize) + 35);
         frame.setResizable(true);
         frame.setVisible(true);
         timer = 60;

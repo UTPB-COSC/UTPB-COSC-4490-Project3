@@ -16,14 +16,16 @@ public class GameServer {
     public void start() {
         while (true) {
             try {
-               
+                // Receive data from client
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
 
+                // Process the received data (game state update from client)
                 String receivedData = new String(packet.getData(), 0, packet.getLength());
                 System.out.println("Received from client: " + receivedData);
 
-                String response = "Game State: " + receivedData;  
+                // Respond back to client with game state (send to all connected clients)
+                String response = "Game State: " + receivedData;  // Here, you'd send updated game state
                 DatagramPacket responsePacket = new DatagramPacket(response.getBytes(),
                         response.length(), packet.getAddress(), packet.getPort());
                 socket.send(responsePacket);

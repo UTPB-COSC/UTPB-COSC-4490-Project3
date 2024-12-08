@@ -1,4 +1,4 @@
-# Pirate Battleship Game (COSC 4490 - Project 3, Aswin)
+# Pirate Battleship Game (COSC 4490 - Project 3, Aswin )
 
 ## Overview
 

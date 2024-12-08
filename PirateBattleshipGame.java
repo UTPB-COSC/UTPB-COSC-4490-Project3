@@ -1,5 +1,6 @@
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+
 import javax.swing.JFrame;
 public class PirateBattleshipGame extends JFrame implements Runnable {
 
@@ -14,7 +15,7 @@ public class PirateBattleshipGame extends JFrame implements Runnable {
         setSize(1000, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        gameCanvas = new GameCanvas(); // Create game canvas
+        gameCanvas = new GameCanvas(client); // Create game canvas
         add(gameCanvas);
         setVisible(true);
 

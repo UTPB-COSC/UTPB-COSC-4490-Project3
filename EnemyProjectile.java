@@ -1,8 +1,10 @@
-import java.awt.*;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 public class EnemyProjectile {
     private int x, y, width, height;
@@ -10,12 +12,14 @@ public class EnemyProjectile {
     private double directionX, directionY; // Direction of movement
     private BufferedImage image;
     private boolean active = true;
+    private GameClient client;
 
-    public EnemyProjectile(int startX, int startY, int targetX, int targetY) {
+    public EnemyProjectile(int startX, int startY, int targetX, int targetY, GameClient client) {
         this.x = startX;
         this.y = startY;
         this.width = 30;
         this.height = 30;
+        this.client = client;
 
         try {
             image = ImageIO.read(new File("src/assets/fireball.png"));
@@ -35,9 +39,28 @@ public class EnemyProjectile {
         x += directionX;
         y += directionY;
 
+        // Send position to the server
+        sendEnemyProjectilePosition();
+
         // Mark projectile as inactive if it goes off-screen
         if (x < 0 || x > 1000 || y < 0 || y > 800) {
             active = false;
+        }
+    }
+
+    private void sendEnemyProjectilePosition() {
+        if (client == null) {
+            System.err.println("UDP Client is not initialized. Cannot send enemy projectile position.");
+            return;
+        }
+
+        try {
+            String position = x + "," + y; // Format: "x,y"
+            System.out.println("Sent " + " Enemyprojectile position: " + position); // Log the type of projectile
+            client.send(position); // Send position to the server
+        } catch (Exception e) {
+            System.err.println("Failed to send enemy projectile position.");
+            e.printStackTrace();
         }
     }
 

@@ -13,7 +13,7 @@ public class GameServer {
                 serverSocket.receive(receivePacket);
 
                 String receivedData = new String(receivePacket.getData(), 0, receivePacket.getLength());
-                System.out.println("Received Player Position: " + receivedData);
+                System.out.println("Received Player: " + receivedData);
             }
         } catch (Exception e) {
             e.printStackTrace();

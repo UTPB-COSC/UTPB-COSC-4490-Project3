@@ -43,7 +43,7 @@ public class GameCanvas extends JPanel {
     private long enemyLastShotTime = 0; // Last shot timestamp for enemy boat
     private ParticleSystem particleSystem = new ParticleSystem();
     private int currentLevel = 1;
-    private GameClient gameClient; // Networking client
+    private GameClient client; // Networking client
 
 
     
@@ -54,7 +54,7 @@ public class GameCanvas extends JPanel {
 
 
 
-    public GameCanvas() {
+    public GameCanvas(GameClient client) {
         rocks = new ArrayList<>();
         generateRocks();
         boat = new Boat(100, screenHeight / 2);
@@ -68,6 +68,7 @@ public class GameCanvas extends JPanel {
         winningPoint = new Rectangle(930, 500, 50, 50); 
         projectiles = new CopyOnWriteArrayList<>(); // Thread-safe for iteration during update
         enemyProjectiles = new CopyOnWriteArrayList<>();
+        this.client = client; // Initialize client via constructor
 
 
 
@@ -87,7 +88,7 @@ public class GameCanvas extends JPanel {
         });
     }
     public void setGameClient(GameClient client) {
-        this.gameClient = client; // Set the GameClient passed from PirateBattleshipGame
+        this.client = client; // Set the GameClient passed from PirateBattleshipGame
     }
     public Boat getPlayerBoat() {
         return boat; // Return the player's boat
@@ -445,24 +446,24 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
     }
 
     private void sendBoatPosition() {
-        if (gameClient == null) { // Use 'gameClient' instead of 'Client'
-            System.err.println("UDP Client is not initialized. Cannot send boat position.");
-            return;
-        }
-    
-        try {
-            Boat playerBoat = getPlayerBoat(); // Get the player's boat
-            int x = playerBoat.getX(); // Get X position of the boat
-            int y = playerBoat.getY(); // Get Y position of the boat
-            String position = x + "," + y; // Format position as "x,y"
-            gameClient.send(position); // Send the boat's position to the server
-            // Log the sent position to the console
-            System.out.println("sent Player Position: " + position); // Prints the position being sent
-        } catch (Exception e) {
-            System.err.println("Failed to send boat position.");
-            e.printStackTrace();
-        }
+    if (client == null) {
+        System.err.println("UDP Client is not initialized. Cannot send boat position.");
+        return;
     }
+
+    try {
+        Boat playerBoat = getPlayerBoat(); // Get the player's boat
+        int x = playerBoat.getX(); // Get X position of the boat
+        int y = playerBoat.getY(); // Get Y position of the boat
+        String position = "PLAYER_POSITION," + x + "," + y; // Format with identifier
+        client.send(position); // Send the boat's position to the server
+        System.out.println("Sent Player Position: " + position); // Prints the position being sent
+    } catch (Exception e) {
+        System.err.println("Failed to send boat position.");
+        e.printStackTrace();
+    }
+}
+
     
     private void updateProjectiles() {
         for (Projectile projectile : projectiles) {
@@ -498,7 +499,7 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
             // Calculate the direction vector from enemy to player
             double directionX = playerX - enemyX;
             double directionY = playerY - enemyY;
-            
+    
             // Normalize the direction vector
             double magnitude = Math.sqrt(directionX * directionX + directionY * directionY);
             directionX /= magnitude;
@@ -506,12 +507,15 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
     
             // Create and add a new projectile that moves towards the player
             enemyProjectiles.add(
-                new Projectile(enemyX, enemyY + enemyBoat.getHeight() / 2 - 15, directionX, directionY, "src/assets/fireball.png")
+                new Projectile(enemyX, enemyY + enemyBoat.getHeight() / 2 - 15, directionX, directionY, "src/assets/fireball.png", client, false)  // false for enemy projectile
             );
     
-            enemyLastShotTime = currentTime; // Update last shot time
+            // Update last shot time
+            enemyLastShotTime = currentTime;
         }
     }
+    
+    
     
     
     
@@ -521,11 +525,12 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
             int boatX = boat.getX();
             int boatY = boat.getY();
             projectiles.add(
-                new Projectile(boatX + boat.getWidth(), boatY + boat.getHeight() / 2 - 15, 1, 0, "src/assets/fireball.png")
-            ); // Shoots rightward
+                new Projectile(boatX + boat.getWidth(), boatY + boat.getHeight() / 2 - 15, 1, 0, "src/assets/fireball.png", client, true)  // true for player projectile
+            );  // Shoots rightward
             lastShotTime = currentTime;
         }
     }
+    
     private void createBoatExplosion(BufferedImage enemyBoatImage, int x, int y, int numFragments) {
         // Use the resized width and height from the EnemyBoat instance
         int fragmentWidth = enemyBoatImage.getWidth() / numFragments;

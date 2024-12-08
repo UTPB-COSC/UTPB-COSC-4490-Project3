@@ -119,13 +119,13 @@ The game includes a **UDP-based multiplayer mode**, allowing players to interact
      ```bash
      java GameServer
      ```
-   - The server will log all incoming player actions and broadcast updates.
+   - The server will log all incoming player position and broadcast updates.
 
 2. **Start the Client**:
    - Run the `PirateBattleshipGame` class to start the game as a client.
    - The game client will:
-     - Send player movements and actions to the server.
-     - Display game updates based on server responses.
+     - Send player boat position to the server.
+     
 
 #### Benefits
 - Enables real-time interaction between multiple players.

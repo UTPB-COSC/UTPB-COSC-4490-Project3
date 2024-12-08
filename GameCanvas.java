@@ -1,18 +1,22 @@
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.imageio.ImageIO;
+import javax.swing.JPanel;
 
 
 
@@ -39,6 +43,8 @@ public class GameCanvas extends JPanel {
     private long enemyLastShotTime = 0; // Last shot timestamp for enemy boat
     private ParticleSystem particleSystem = new ParticleSystem();
     private int currentLevel = 1;
+    private GameClient gameClient; // Networking client
+
 
     
     
@@ -80,7 +86,13 @@ public class GameCanvas extends JPanel {
             }
         });
     }
-
+    public void setGameClient(GameClient client) {
+        this.gameClient = client; // Set the GameClient passed from PirateBattleshipGame
+    }
+    public Boat getPlayerBoat() {
+        return boat; // Return the player's boat
+    }
+    
     public void generateRocks() {
         rocks.clear(); // Clear old rocks
         int numRocks = 5 + currentLevel * 2; // Base rock count with level scaling
@@ -424,11 +436,34 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
                 endGame();
             }
 
+            sendBoatPosition();
+            
+            
             debugOverlay.update();
             repaint();
         }
     }
 
+    private void sendBoatPosition() {
+        if (gameClient == null) { // Use 'gameClient' instead of 'Client'
+            System.err.println("UDP Client is not initialized. Cannot send boat position.");
+            return;
+        }
+    
+        try {
+            Boat playerBoat = getPlayerBoat(); // Get the player's boat
+            int x = playerBoat.getX(); // Get X position of the boat
+            int y = playerBoat.getY(); // Get Y position of the boat
+            String position = x + "," + y; // Format position as "x,y"
+            gameClient.send(position); // Send the boat's position to the server
+            // Log the sent position to the console
+            System.out.println("sent Player Position: " + position); // Prints the position being sent
+        } catch (Exception e) {
+            System.err.println("Failed to send boat position.");
+            e.printStackTrace();
+        }
+    }
+    
     private void updateProjectiles() {
         for (Projectile projectile : projectiles) {
             if (projectile.isActive()) {
@@ -525,6 +560,8 @@ g.fillRect(winningPoint.x, winningPoint.y, winningPoint.width, winningPoint.heig
         currentState = GameState.GAME_OVER;
         bgMusic.stop(); // Stop background music
         boatCrashSound.playOnce();
+       
+        
     }
     public void resetGame() {
         boat.resetPosition();

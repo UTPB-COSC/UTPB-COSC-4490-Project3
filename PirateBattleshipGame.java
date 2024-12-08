@@ -1,30 +1,28 @@
-import javax.swing.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-
+import javax.swing.JFrame;
 public class PirateBattleshipGame extends JFrame implements Runnable {
 
     private GameCanvas gameCanvas;
-    private volatile boolean running = true; // Allows for a graceful exit from the game loop
+    private volatile boolean running = true;
     private GameClient client; // Networking client
     
-    private Thread networkThread; // Separate thread for handling networking
+    private Thread networkThread;
 
     public PirateBattleshipGame() {
         setTitle("Pirate Battleship Game");
         setSize(1000, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        gameCanvas = new GameCanvas();
+        gameCanvas = new GameCanvas(); // Create game canvas
         add(gameCanvas);
         setVisible(true);
 
-        // Add key listener for movement and actions
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 gameCanvas.handleKeyPress(e.getKeyCode());
-                
+
                 String action = "";
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_UP:
@@ -44,7 +42,7 @@ public class PirateBattleshipGame extends JFrame implements Runnable {
                         break;
                 }
                 if (!action.isEmpty()) {
-                    System.out.println("Sending action: " + action);  // Debugging log
+                    System.out.println("Sending action: " + action);
                     sendPlayerAction(action);
                 }
             }
@@ -68,10 +66,10 @@ public class PirateBattleshipGame extends JFrame implements Runnable {
 
     private void initializeNetworking() {
         try {
-            client = new GameClient(); // Initialize the client
+            client = new GameClient("localhost", 9876); // Initialize the client
             System.out.println("GameClient initialized successfully.");
-            // Now send the TEST_CONNECTION after client is initialized
-            sendPlayerAction("TEST_CONNECTION");
+            gameCanvas.setGameClient(client); // Pass client to GameCanvas
+            sendPlayerAction("TEST_CONNECTION"); // Send test connection message
         } catch (Exception e) {
             System.err.println("Failed to initialize GameClient: " + e.getMessage());
             e.printStackTrace();
@@ -85,7 +83,7 @@ public class PirateBattleshipGame extends JFrame implements Runnable {
         }
 
         try {
-            System.out.println("Sending action: " + action); // Debug log
+            System.out.println("Sending action: " + action);
             client.send(action);
         } catch (Exception e) {
             System.err.println("Failed to send action: " + action);
@@ -96,10 +94,9 @@ public class PirateBattleshipGame extends JFrame implements Runnable {
     private void networkHandler() {
         while (running) {
             try {
-                // Receive game state updates from the server
                 String gameState = client.receive();
                 if (gameState != null) {
-                    System.out.println("Game state received: " + gameState); // Log response
+                    System.out.println("Game state received: " + gameState);
                     gameCanvas.updateFromServer(gameState);
                 } else {
                     System.err.println("No game state received.");
@@ -110,23 +107,20 @@ public class PirateBattleshipGame extends JFrame implements Runnable {
             }
         }
     }
-    
 
     @Override
     public void run() {
         final int targetFPS = 60;
-        final long optimalTime = 1_000_000_000 / targetFPS; // Optimal time per frame in nanoseconds
+        final long optimalTime = 1_000_000_000 / targetFPS;
 
         while (running) {
             long startTime = System.nanoTime();
 
-            // Update game state and repaint the canvas
             gameCanvas.updateGame();
             gameCanvas.repaint();
 
-            // Calculate elapsed time and sleep to maintain target frame rate
             long elapsedTime = System.nanoTime() - startTime;
-            long sleepTime = (optimalTime - elapsedTime) / 1_000_000; // Convert to milliseconds
+            long sleepTime = (optimalTime - elapsedTime) / 1_000_000;
 
             if (sleepTime > 0) {
                 try {
@@ -138,10 +132,9 @@ public class PirateBattleshipGame extends JFrame implements Runnable {
         }
     }
 
-    // Gracefully terminate all threads
     @Override
     public void dispose() {
-        running = false; // Stop game loop and network handler
+        running = false;
         if (client != null) {
             client.close();
         }

@@ -13,7 +13,7 @@ public class Game implements Runnable {
     public Player player;
     public Bomb bomb;
     public Enemy[] enemies;
-    public Tile[][] map;
+    public static Tile[][] map;
     public int mapWidth = 15;
     public int mapHeight = 11;
     public int tileSize = 50;
@@ -129,7 +129,7 @@ public class Game implements Runnable {
                 if (y == 0 || y == mapHeight - 1 || x == 0 || x == mapWidth - 1 || (x % 2 == 0 && y % 2 == 0)) {
                     map[y][x] = new Tile(Tile.Type.WALL);
                 } else {
-                    if (Math.random() < 0.2) {
+                    if (Math.random() < 0.5) {
                         map[y][x] = new Tile(Tile.Type.BLOCK);
                     } else {
                         map[y][x] = new Tile(Tile.Type.EMPTY);

@@ -13,7 +13,7 @@ public class Enemy {
     private BufferedImage enemyImg;  
     private Random random = new Random();
     private long lastMoveTime = 0;
-    private final long moveCooldown = 1000;
+    private final long moveCooldown = 100;
 
     public Enemy(int x, int y, Game game) {
         this.x = x;

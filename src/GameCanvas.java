@@ -51,16 +51,19 @@ public class GameCanvas extends JPanel implements Runnable
                 g2d.drawImage(game.scrollingImage, game.scrollingX, game.scrollingY, null);
             }
             game.spaceship.drawShip(g2d);
-            for (Bullet bullet : game.bullets) {
+            ArrayList<Bullet> tempBullets = (ArrayList<Bullet>) game.bullets.clone();
+            for (Bullet bullet : tempBullets) {
                 bullet.draw(g2d);
             }
 
-            for (Asteroid asteroid : game.asteroids) {
+            ArrayList<Asteroid> tempAsteroids = (ArrayList<Asteroid>) game.asteroids.clone();
+            for (Asteroid asteroid : tempAsteroids) {
                 asteroid.drawAsteroid(g2d);
             }
             
             // Draw particles
-            for (Particle particle : game.particles) {
+            ArrayList<Particle> tempParticles = (ArrayList<Particle>) game.particles.clone();
+            for (Particle particle : tempParticles) {
                 particle.draw(g2d);
             }
             

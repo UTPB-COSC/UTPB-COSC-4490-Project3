@@ -15,6 +15,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -370,23 +371,35 @@ public class Game extends JPanel implements Runnable
             	
             	spaceship.update();
 
-        		for (Bullet bullet : bullets) {
-                bullet.update();
+                ArrayList<Bullet> tempBullets = (ArrayList<Bullet>)bullets.clone();
+        		for (Bullet bullet : tempBullets) {
+                    bullet.update();
+                    if (!bullet.isOnScreen(tk.getScreenSize().width, tk.getScreenSize().height)) {
+                        delBullet(bullet);
+                    }
         		}
 
-        		for (Asteroid asteroid : asteroids) {
-                asteroid.update();
+                ArrayList<Asteroid> tempRoids = (ArrayList<Asteroid>)asteroids.clone();
+        		for (Asteroid asteroid : tempRoids) {
+                    asteroid.update();
+                    if (asteroid.isDestroyed()) {
+                        delAsteroid(asteroid);
+                    }
         		}
         	//}
 
             	
             	// Update particles
-                for (Particle particle : particles) {
+                ArrayList<Particle> tempParticles = (ArrayList<Particle>)particles.clone();
+                for (Particle particle : tempParticles) {
                     particle.update();
+                    if (!particle.isAlive()) {
+                        delParticle(particle);
+                    }
                 }
 
                 // Remove expired particles
-                particles.removeIf(particle -> !particle.isAlive());
+                //particles.removeIf(particle -> !particle.isAlive());
                 
             // Handle scrolling image
             if (isScrolling) {
@@ -405,8 +418,8 @@ public class Game extends JPanel implements Runnable
             checkCollisions();
 
             // Remove off-screen bullets and destroyed asteroids
-            bullets.removeIf(bullet -> !bullet.isOnScreen(tk.getScreenSize().width, tk.getScreenSize().height));
-            asteroids.removeIf(asteroid -> asteroid.isDestroyed());
+            //bullets.removeIf(bullet -> !bullet.isOnScreen(tk.getScreenSize().width, tk.getScreenSize().height));
+            //asteroids.removeIf(asteroid -> asteroid.isDestroyed());
 
             // Repaint the game screen
             repaint();
@@ -518,6 +531,27 @@ public class Game extends JPanel implements Runnable
             } catch (InterruptedException ex)
             {
             }
+        }
+    }
+
+    private synchronized void delAsteroid(Asteroid a) {
+        if (asteroids.contains(a)) {
+            int idx = asteroids.indexOf(a);
+            asteroids.remove(idx);
+        }
+    }
+
+    private synchronized void delBullet(Bullet b) {
+        if (bullets.contains(b)) {
+            int idx = bullets.indexOf(b);
+            bullets.remove(idx);
+        }
+    }
+
+    private synchronized void delParticle(Particle p) {
+        if (particles.contains(p)) {
+            int idx = particles.indexOf(p);
+            particles.remove(idx);
         }
     }
 

@@ -661,6 +661,9 @@ public class Game extends JPanel implements Runnable
         }
 
         spaceship.reset();
+        asteroids = new ArrayList<>();
+        bullets = new ArrayList<>();
+        particles = new ArrayList<>();
         //pipes = new Asteroid[5];
         Asteroid p = new Asteroid(this, tk, tk.getScreenSize().height / 2, pipeWidth, pipeHeight);
         //pipes[0] = p;

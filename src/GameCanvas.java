@@ -53,7 +53,7 @@ public class GameCanvas extends JPanel implements Runnable
             game.spaceship.drawShip(g2d);
             ArrayList<Bullet> tempBullets = (ArrayList<Bullet>) game.bullets.clone();
             for (Bullet bullet : tempBullets) {
-                bullet.draw(g2d);
+                bullet.draw(g2d, game.debug);
             }
 
             ArrayList<Asteroid> tempAsteroids = (ArrayList<Asteroid>) game.asteroids.clone();

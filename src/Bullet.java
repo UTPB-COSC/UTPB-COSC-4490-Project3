@@ -20,9 +20,14 @@ public class Bullet {
         y += SPEED * Math.sin(Math.toRadians(angle));
     }
 
-    public void draw(Graphics2D g2d) {
+    public void draw(Graphics2D g2d, boolean debug) {
         g2d.setColor(Color.YELLOW);
         g2d.fillOval((int) x - 2, (int) y - 2, 4, 4);
+
+        if (debug) {
+            g2d.setColor(Color.RED);
+            g2d.drawRect((int) x - 2, (int) y - 2, 4, 4);
+        }
     }
 
     public boolean isOnScreen(int width, int height) {

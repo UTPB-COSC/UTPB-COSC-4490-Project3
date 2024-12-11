@@ -106,6 +106,12 @@ public class Spaceship
         g2d.setColor(Color.RED);
         g2d.drawPolygon(new int[]{-10, 10, -10}, new int[]{-10, 0, 10}, 3);
         g2d.setTransform(old);
+
+        if (game.debug)
+        {
+            g2d.setColor(Color.RED);
+            g2d.drawRect((int) x - 10, (int) y - 10, 20, 20);
+        }
     }
 
     public boolean collide(Asteroid pipe)
@@ -171,19 +177,12 @@ public class Spaceship
 
     public void reset()
     {
-        xPos = tk.getScreenSize().width / 2;
-        yPos = tk.getScreenSize().height / 2;
-
-        yVel = 0.0;
+        x = tk.getScreenSize().width / 2;
+        y = tk.getScreenSize().height / 2;
     }
 
     public void update()
     {
-        yVel += yAcc;
-        yPos += yVel;
-        
-        
-        
         if (rotatingLeft) {
             angle -= 2;
         }

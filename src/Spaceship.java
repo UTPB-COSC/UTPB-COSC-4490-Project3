@@ -29,10 +29,10 @@ public class Spaceship
     private int xGrace = 12;
     private int yGrace = 6;
 
-    private BufferedImage[] birdImage = new BufferedImage[4];
-    private int animframe = 0;
-    private int animRate = 4;
-    private int frameCount = 0;
+    private BufferedImage image;
+    //private int animframe = 0;
+    //private int animRate = 4;
+    //private int frameCount = 0;
     
     
     
@@ -47,7 +47,15 @@ public class Spaceship
         
         this.x = x;
         this.y = y;
-        this.angle = 0;
+        this.angle = Math.toRadians(90.0); // Pointing upwards
+        loadImage();
+
+
+        //BufferedImage image = ImageIO.read(new File("starfighter.png"));
+        //width = tk.getScreenSize().width / 12;
+        //height = (int)(((double)width / (double)image.getWidth()) * (image.getHeight() / 4));
+        //xGrace = Math.max(xGrace, width / 14);
+        //yGrace = Math.max(yGrace, height / 20);
 
         
 /*        
@@ -73,10 +81,10 @@ public class Spaceship
         
 */        
     }
-
+/*
     public void drawShip(Graphics2D g2d)
     {
-/*        
+
     	double rotation = Math.tanh(yVel / 8.0 - 0.2);
         AffineTransform at = new AffineTransform();
         at.rotate(rotation, width / 2, height / 2);
@@ -97,15 +105,23 @@ public class Spaceship
             g2d.setColor(Color.RED);
             g2d.drawRect(xPos + xGrace, yPos + yGrace, width - xGrace * 2, height - yGrace * 2);
         }
-*/        
+
         
         
         AffineTransform old = g2d.getTransform();
         g2d.translate(x, y);
         g2d.rotate(Math.toRadians(angle));
-        g2d.setColor(Color.RED);
-        g2d.drawPolygon(new int[]{-10, 10, -10}, new int[]{-10, 0, 10}, 3);
+        //g2d.setColor(Color.RED);
+        //g2d.drawPolygon(new int[]{-10, 10, -10}, new int[]{-10, 0, 10}, 3);
+        //BufferedImage starfighter;
+        g2d.drawImage(image, xPos, yPos, null);
         g2d.setTransform(old);
+
+        if (game.debug)
+        {
+            g2d.setColor(Color.RED);
+            g2d.drawRect((int) (x + xGrace), (int) (y + yGrace), width - xGrace * 2, height - yGrace * 2);
+        }
     }
 
     public boolean collide(Asteroid pipe)
@@ -126,7 +142,7 @@ public class Spaceship
         }
         return false;
     }
-
+*/
     public void collide()
     {
         new Thread(() ->
@@ -145,6 +161,37 @@ public class Spaceship
                 ex.printStackTrace();
             }
         }).start();
+    }
+
+    // Load the PNG image
+    private void loadImage() {
+        try {
+            image = ImageIO.read(new File("starfighter2.png"));
+        } catch (IOException e) {
+            System.err.println("Error loading enemy ship image: " + e.getMessage());
+            image = null;
+        }
+    }
+
+    // Draw the spaceship
+    public void drawShip(Graphics2D g2d) {
+        if (image != null) {
+            // Save the current transform
+            var originalTransform = g2d.getTransform();
+
+            // Rotate and draw the image
+            g2d.translate(x, y);
+            g2d.rotate(Math.toRadians(angle));
+            // Draw the image centered at the position
+            int imageWidth = image.getWidth();
+            int imageHeight = image.getHeight();
+            g2d.drawImage(image, -imageWidth / 2, -imageHeight / 2, null);
+            //g2d.rotate(angle);
+            //g2d.drawImage(image, image.getWidth(), image.getHeight(), null);
+
+            // Restore the original transform
+            g2d.setTransform(originalTransform);
+        }
     }
 
     public void pewpew()
@@ -171,16 +218,16 @@ public class Spaceship
 
     public void reset()
     {
-        xPos = tk.getScreenSize().width / 2;
-        yPos = tk.getScreenSize().height / 2;
+        x = (double) tk.getScreenSize().width / 2;
+        y = (double) tk.getScreenSize().height / 2;
 
-        yVel = 0.0;
+        //yVel = 0.0;
     }
 
     public void update()
     {
-        yVel += yAcc;
-        yPos += yVel;
+        //yVel += yAcc;
+        //yPos += yVel;
         
         
         
@@ -199,10 +246,19 @@ public class Spaceship
         if (x > tk.getScreenSize().width) x = 0;
         if (y < 0) y = tk.getScreenSize().height;
         if (y > tk.getScreenSize().height) y = 0;
+
+        //System.out.println("Spaceship position: x=" + x + ", y=" + y + ", angle=" + Math.toDegrees(angle));
     }
     
+//    public Rectangle getBounds() {
+//        return new Rectangle((int) x - 10, (int) y - 10, 20, 20);
+//    }
+
+    // Get the bounds for collision detection
     public Rectangle getBounds() {
-        return new Rectangle((int) x - 10, (int) y - 10, 20, 20);
+        int width = image != null ? image.getWidth() : 0;
+        int height = image != null ? image.getHeight() : 0;
+        return new Rectangle((int) x - width / 2, (int) y - height / 2, width, height);
     }
 
     public void setRotatingLeft(boolean rotatingLeft) {

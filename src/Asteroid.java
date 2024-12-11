@@ -81,7 +81,7 @@ public class Asteroid
         
         
         g2d.setColor(Color.GRAY);
-        g2d.drawOval((int) x - size / 2, (int) y - size / 2, size, size);
+        g2d.fillOval((int) x - size / 2, (int) y - size / 2, size, size);
 
         if (game.debug) {
             g2d.setColor(Color.RED);

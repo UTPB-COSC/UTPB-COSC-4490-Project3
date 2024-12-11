@@ -192,6 +192,11 @@ public class Spaceship
             // Restore the original transform
             g2d.setTransform(originalTransform);
         }
+
+        if (game.debug) {
+            g2d.setColor(Color.RED);
+            g2d.drawRect((int) x - image.getWidth()/2, (int) y - image.getHeight()/2, image.getWidth(), image.getHeight());
+        }
     }
 
     public void pewpew()

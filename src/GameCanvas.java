@@ -41,6 +41,13 @@ public class GameCanvas extends JPanel implements Runnable
             g2d.setColor(Color.BLACK);
             g2d.fillRect(0, 0, width, height);
 
+            for (Point star : game.stars) {
+                g2d.setColor(Color.WHITE);
+                int sW = (int)(Math.random() * 2 + 2);
+                int sH = (int)(Math.random() * 2 + 2);
+                g2d.fillOval(star.x, star.y, sW, sH);
+            }
+
             for (int i = 0; i < game.clouds.length; i++)
             {
                 if (game.clouds[i] != null && !game.clouds[i].passed)
@@ -69,9 +76,9 @@ public class GameCanvas extends JPanel implements Runnable
                 particle.draw(g2d);
             }
 
-            game.enemyShip.draw(g2d); // Draw the enemy ship
-            
-            
+            if (game.enemyShip.isActive()) {
+                game.enemyShip.draw(g2d, game.debug); // Draw the enemy ship
+            }
 
             g2d.setColor(Color.RED);
             g2d.drawOval(game.mouseX - crosshairSize, game.mouseY - crosshairSize, crosshairSize*2, crosshairSize*2);

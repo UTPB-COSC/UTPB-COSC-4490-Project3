@@ -65,6 +65,9 @@ public class Game extends JPanel implements Runnable
     public Cloud[] clouds = new Cloud[cloudCap];
     private int cloudCount = 0;
     private final double cloudRate = 0.005;
+
+    private int numStars = 50;
+    public ArrayList<Point> stars = new ArrayList<>();
     
     
     
@@ -101,6 +104,12 @@ public class Game extends JPanel implements Runnable
         frame.setUndecorated(true);
 
         tk = Toolkit.getDefaultToolkit();
+
+        for (int i = 0; i < numStars; i++) {
+            int starX = (int)(Math.random() * tk.getScreenSize().width);
+            int starY = (int)(Math.random() * tk.getScreenSize().height);
+            stars.add(new Point(starX, starY));
+        }
 
         frame.setVisible(true);
         frame.requestFocus();
@@ -166,8 +175,6 @@ public class Game extends JPanel implements Runnable
                 }
             });
             enemySpawnTimer.start();
-            
-            
             
 /*
             BufferedImage image = ImageIO.read(new File("pipe.png"));
@@ -637,15 +644,18 @@ public class Game extends JPanel implements Runnable
         Iterator<Bullet> bulletIterator = bullets.iterator();
         while (bulletIterator.hasNext()) {
             Bullet bullet = bulletIterator.next();
-            if (enemyShip.getEnemyBounds().intersects(bullet.getBounds())){
+            if (enemyShip.isActive() && enemyShip.getEnemyBounds().intersects(bullet.getBounds())){
                 explodes();
                 generateParticles(enemyShip.getX(), enemyShip.getY());
+                enemyShip.deactivate();
+                enemyShip.resetPosition();
                 //enemyShip.remove();
                 score += 50;
                 bulletIterator.remove();
                 break;
             }
-            for (Asteroid asteroid : asteroids) {
+            ArrayList<Asteroid> tempAsteroids = (ArrayList<Asteroid>) asteroids.clone();
+            for (Asteroid asteroid : tempAsteroids) {
                 if (asteroid.getBounds().intersects(bullet.getBounds())) {
                     asteroid.boom();
                     generateParticles(asteroid.getX(), asteroid.getY());
@@ -667,10 +677,10 @@ public class Game extends JPanel implements Runnable
             }
         }
 
-        if (enemyShip.getEnemyBounds().intersects(spaceship.getBounds())){
+        if (enemyShip.isActive() && enemyShip.getEnemyBounds().intersects(spaceship.getBounds())){
             spaceship.collide();
             spaceship.setDestroyed(true);
-            running = !running;;
+            running = !running;
         }
     }
 

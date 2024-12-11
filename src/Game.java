@@ -6,6 +6,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
 import javax.swing.*;
+import java.io.IOException;
 
 
 import java.awt.*;
@@ -72,13 +73,16 @@ public class Game extends JPanel implements Runnable
     public ArrayList<Asteroid> asteroids;
     public ArrayList<Bullet> bullets;
     public ArrayList<Particle> particles; // List to store all particles
-    
+/*
  // Scrolling image
     public BufferedImage scrollingImage;
     public int scrollingX; // X position for scrolling
     public int scrollingY; // Y position for scrolling
     public boolean isScrolling; // Flag to check if the image is currently scrolling
     private Random random;
+*/
+    public EnemyShip enemyShip;
+    private Timer enemySpawnTimer; // Timer to control random spawn
 
     
 // Game state
@@ -117,7 +121,7 @@ public class Game extends JPanel implements Runnable
                     highScore = 0;
                 }
             }
-
+/*
          // Load scrolling PNG image
             try {
                 scrollingImage = ImageIO.read(new File("alien.png")); // Replace with your image file path
@@ -130,7 +134,7 @@ public class Game extends JPanel implements Runnable
             scrollingY = 0;
             isScrolling = false;
             random = new Random();
-            
+*/
             spaceship = new Spaceship(this, tk, tk.getScreenSize().width/2, tk.getScreenSize().height/2);
             asteroids = new ArrayList<>();
             bullets = new ArrayList<>();
@@ -146,10 +150,22 @@ public class Game extends JPanel implements Runnable
             Timer asteroidSpawnTimer = new Timer(3000, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    spawnAsteroid();
+                    if (running)
+                        spawnAsteroid();
                 }
             });
             asteroidSpawnTimer.start(); // Start spawning asteroids
+
+            // Existing initialization
+            enemyShip = new EnemyShip();
+
+            // Timer to randomly spawn the enemy ship
+            enemySpawnTimer = new Timer(10000, e -> {
+                if (!enemyShip.isActive()) {
+                    enemyShip.activate();
+                }
+            });
+            enemySpawnTimer.start();
             
             
             
@@ -386,6 +402,11 @@ public class Game extends JPanel implements Runnable
                         delAsteroid(asteroid);
                     }
         		}
+
+                enemyShip.update(); // Update the enemy ship
+                //if (enemyShip.isDestroyed()){
+                 //   enemyShip.delEnemy();
+               //}
         	//}
 
             	
@@ -400,7 +421,7 @@ public class Game extends JPanel implements Runnable
 
                 // Remove expired particles
                 //particles.removeIf(particle -> !particle.isAlive());
-                
+/*
             // Handle scrolling image
             if (isScrolling) {
                     scrollingX -= 2; // Scroll speed
@@ -415,6 +436,8 @@ public class Game extends JPanel implements Runnable
                         scrollingY = random.nextInt(tk.getScreenSize().height - scrollingImage.getHeight()); // Random vertical position
                     }
                 }
+
+ */
             checkCollisions();
 
             // Remove off-screen bullets and destroyed asteroids
@@ -555,6 +578,8 @@ public class Game extends JPanel implements Runnable
         }
     }
 
+
+
     
  // Spawn a single asteroid at a random location along the edges
     private void spawnAsteroid() {
@@ -612,6 +637,14 @@ public class Game extends JPanel implements Runnable
         Iterator<Bullet> bulletIterator = bullets.iterator();
         while (bulletIterator.hasNext()) {
             Bullet bullet = bulletIterator.next();
+            if (enemyShip.getEnemyBounds().intersects(bullet.getBounds())){
+                explodes();
+                generateParticles(enemyShip.getX(), enemyShip.getY());
+                //enemyShip.remove();
+                score += 50;
+                bulletIterator.remove();
+                break;
+            }
             for (Asteroid asteroid : asteroids) {
                 if (asteroid.getBounds().intersects(bullet.getBounds())) {
                     asteroid.boom();
@@ -633,6 +666,34 @@ public class Game extends JPanel implements Runnable
                 running = !running;;
             }
         }
+
+        if (enemyShip.getEnemyBounds().intersects(spaceship.getBounds())){
+            spaceship.collide();
+            spaceship.setDestroyed(true);
+            running = !running;;
+        }
+    }
+
+    public void explodes()
+    {
+        //yVel -= 5.0;
+
+        new Thread(() ->
+        {
+            try
+            {
+                AudioInputStream ais = AudioSystem.getAudioInputStream(new File("explosion.wav").getAbsoluteFile());
+                Clip clip = AudioSystem.getClip();
+                clip.open(ais);
+                FloatControl gain = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+                gain.setValue(20f * (float) Math.log10(volume));
+                clip.start();
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+        }).start();
     }
     
  // Method to generate particles at a given position
@@ -665,10 +726,15 @@ public class Game extends JPanel implements Runnable
         bullets = new ArrayList<>();
         particles = new ArrayList<>();
         //pipes = new Asteroid[5];
-        Asteroid p = new Asteroid(this, tk, tk.getScreenSize().height / 2, pipeWidth, pipeHeight);
+        //Asteroid p = new Asteroid(this, tk, tk.getScreenSize().height / 2, pipeWidth, pipeHeight);
         //pipes[0] = p;
         //pipeCount = 1;
+
         score = 0;
+        asteroids = new ArrayList<>();
+        bullets = new ArrayList<>();
+        particles = new ArrayList<>();
+
 
         //clouds = new Cloud[cloudCap];
         //cloudCount = 0;

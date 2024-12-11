@@ -46,10 +46,12 @@ public class GameCanvas extends JPanel implements Runnable
                 if (game.clouds[i] != null && !game.clouds[i].passed)
                     game.clouds[i].drawCloud(g2d);
             }
-
+/*
             if (game.isScrolling) {
                 g2d.drawImage(game.scrollingImage, game.scrollingX, game.scrollingY, null);
             }
+
+ */
             game.spaceship.drawShip(g2d);
             ArrayList<Bullet> tempBullets = (ArrayList<Bullet>) game.bullets.clone();
             for (Bullet bullet : tempBullets) {
@@ -66,6 +68,8 @@ public class GameCanvas extends JPanel implements Runnable
             for (Particle particle : tempParticles) {
                 particle.draw(g2d);
             }
+
+            game.enemyShip.draw(g2d); // Draw the enemy ship
             
             
 

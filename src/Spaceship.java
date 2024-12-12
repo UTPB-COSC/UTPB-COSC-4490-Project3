@@ -278,7 +278,9 @@ public class Spaceship
         this.accelerating = accelerating;
     }
 
-    public Bullet shoot() {
+    public Bullet shoot()
+
+    {
         pewpew();
     	return new Bullet(x, y, angle);
     }

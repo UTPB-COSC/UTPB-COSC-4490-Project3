@@ -1,9 +1,12 @@
 package src;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.Random;
 
+import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -27,7 +30,7 @@ public class Asteroid
 
     private boolean scoreable = true;
     public boolean spawnable = true;
-    
+    private BufferedImage image;
     
     
     private double x, y;             // Position
@@ -69,23 +72,39 @@ public class Asteroid
         double angle = rand.nextDouble() * 2 * Math.PI; // Random angle between 0 and 2*PI
         this.velocityX = speed * Math.cos(angle);
         this.velocityY = speed * Math.sin(angle);
+
+        loadImage();
     }
 
-    public void drawAsteroid(Graphics2D g2d)
-    {
-/*    	
+    public void drawAsteroid(Graphics2D g2d) {
+        if (image != null) {
+/*
         Graphics2D g2d = (Graphics2D) g;
         g2d.drawImage(game.pipeImage, xPos, yPos, null);
         g2d.drawImage(game.flippedPipe, xPos, yPos - gap - height, null);
-*/        
-        
-        
-        g2d.setColor(Color.GRAY);
-        g2d.fillOval((int) x - size / 2, (int) y - size / 2, size, size);
+*/
+            //g2d.translate(x, y);
+            int imageWidth = image.getWidth();
+            int imageHeight = image.getHeight();
+            g2d.drawImage(image, (int) x, (int) y, null);
 
-        if (game.debug) {
-            g2d.setColor(Color.RED);
-            g2d.drawRect((int) x - size / 2, (int) y - size / 2, size, size);
+            //g2d.setColor(Color.GRAY);
+            // g2d.fillOval((int) x - size / 2, (int) y - size / 2, size, size);
+
+            if (game.debug) {
+                g2d.setColor(Color.RED);
+                g2d.drawRect((int) x, (int) y, getWidth(), getHeight());
+            }
+        }
+    }
+
+    // Load the PNG image
+    private void loadImage() {
+        try {
+            image = ImageIO.read(new File("junk.png"));
+        } catch (IOException e) {
+            System.err.println("Error loading enemy ship image: " + e.getMessage());
+            image = null;
         }
     }
 
@@ -139,10 +158,24 @@ public class Asteroid
     
     
  // Get the bounding box for collision detection
-    public Rectangle getBounds() {
-        return new Rectangle((int) x - size / 2, (int) y - size / 2, size, size);
+   // public Rectangle getBounds() {
+     //   return new Rectangle((int) x - size / 2, (int) y - size / 2, size, size);
+    //}
+// Get the bounds for collision detection
+
+    public int getWidth() {
+        return image != null ? image.getWidth() : 0;
     }
 
+    public int getHeight() {
+        return image != null ? image.getHeight() : 0;
+    }
+
+ public Rectangle getBounds() {
+     //int width = image != null ? image.getWidth() : 0;
+     //int height = image != null ? image.getHeight() : 0;
+     return new Rectangle((int) x, (int) y, getWidth(), getHeight());
+ }
     // Set the asteroid as destroyed
     public void setDestroyed(boolean destroyed) {
         this.destroyed = destroyed;
